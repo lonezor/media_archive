@@ -1,0 +1,47 @@
+Search content based on tags. An exact string match of tags modelled with one or multiple levels of information.
+
+By default the system includes all available info such as timestamps and EXIF. But the user then needs to tag it for
+better search results. Tags can be changed at any time during the life cycle of an object, but mainly before initial
+upload.
+
+New tags can be added. Old tags are made visible to make it easier to find them. Some tags are predefined such as
+country, continents etc.
+
+Tags are stored in database in tag table and associated with the sha1 sum of each object. They are stored as key-value
+value pair but when not relevant N/A is used internally (e.g. 'location.country' = 'United Kingdom" and 'animal' = 'N/A')
+
+Query language with same syntax as Wireshark:
+time.year == 2017 && time.month == 8 && time.day >= 12
+
+time.year (2017)
+time.month 8
+time.day 22
+time.weekday Tuesday
+time.date (2017-08-22)
+time.epoch
+
+orientation (Landscape, Portrait)
+size (nr of bytes)
+environment (city, countryside, forest, sea)
+
+location.galaxy (Milkyway) - relevant if uploading NASA images etc
+location.planet (Earth)
+location.continent (Asia, Africa, North America, South America, Antarctica, Europe, Australia)
+location.ocean (Arctic, Atlantic, Indian, Pacific, Southern)
+location.country
+location.region
+location.city
+location.district
+location.street
+location.house
+
+exif.Model
+exif.GPSLatitude
+..
+
+william
+william.babyMonth (1-12)
+william.age (3)
+william.activity (Eating, Sleeping, Playing, Swimming)
+
+animal

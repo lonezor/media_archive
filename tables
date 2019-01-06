@@ -1,0 +1,41 @@
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+tag_avp: List of all available AVPs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*id             - uint64
+ attribute      - varchar(256): Attribute name (e.g. 'location.country')
+ value          - varchar(256): Value (e.g. 'United Kingdom')
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+object: List of all available objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*sha1           - varchar(20): key
+ size           - uint64: Object size (bytes)
+ type           - varchar(256) - image/video
+ screenWidth    - uint32: Horizontal media size
+ screenHeight   - uint32: Vertical media size
+ storageId      - uint64: reference to storage table
+ created        - uint32: epoch timestamp when object was created, from file system attribute
+ uploaded       - uint32: epoch timestamp of when object was uploaded
+ searchCounter  - uint64: how many times has object been found in search results
+ searchTs       - uint32: timestamp of last search
+ displayCounter - uint64: how many times has object been fully displayed
+ displayCounter - uint32: timestamp of last display
+ description    - varchar(1048576): user description. In most cases quite short
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+object_tag: Object tag associations (biggest table)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*sha1  - varchar(20): reference to object table
+*tagId - uint64: reference to tag_avp table
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+storage: Storage in local file system or using remote cloud storage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*id       - uint64
+ type     - varchar(256): 'FileSystem', 'Backblaze', etc
+ ahthName - varchar(256): username, if applicable
+ authKey  - varchar(8192): authorization key, if applicable
+ url      - varchar(2048): URL, if applicable
+ path     - varchar(2048): '/var/objects' or '/objectBucket'
+
+That's all. With SQL queries on above much can be achieved.

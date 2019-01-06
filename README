@@ -1,0 +1,27 @@
+
+Project Dependencies:
+######################
+
+1) libpngquant
+----------------------------------------------------------------
+git clone git://github.com/pornel/pngquant.git
+cd pngquant
+./configure --prefix=/usr/ --enable-sse 
+make && make install
+cd lib
+make shared
+cp libimagequant.so.0 /usr/lib/libimagequant.so.0 
+ln -s /usr/lib/libimagequant.so /usr/lib/libimagequant.so.0 
+
+2) libpng (preferably PNG_LIBPNG_VER > 10400)
+------------------------------------------------
+
+
+3) FreeImage
+
+4) <hashlib>
+
+
+
+Web Server:
+Increase sizes for post size, file size and number of files in a single post.
