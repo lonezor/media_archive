@@ -18,7 +18,7 @@ File::VideoMetaData Video::getMetadata() {
 
 	memset(&metaData, 0, sizeof(metaData));
 
-	cmd = string("/usr/bin/ffprobe  -v error -of flat=s=_ -select_streams v:0 -show_entries stream=height,width,duration -i ")
+	cmd = string("/usr/bin/ffprobe  -v error -of flat=s=_ -select_streams v:0 -show_entries stream=height,width -i ")
 			+ "\"" + file->getPath() + "\"";
 
 	cmdResp = ShellCmd::execute(cmd);
@@ -32,6 +32,8 @@ File::VideoMetaData Video::getMetadata() {
 		for(vector<string>::iterator it = propertyVector.begin(); it != propertyVector.end(); ++it) {
 			string p = *it;
 
+			printf("string '%s'\n", p.c_str());
+
 			if (Common::subStringCount(p, "streams_stream_0_width")) {
 				valueVector = Common::splitString(p, "=");
 				metaData.width = Common::stringToUint32(valueVector[1]);
@@ -41,21 +43,20 @@ File::VideoMetaData Video::getMetadata() {
 				valueVector = Common::splitString(p, "=");
 				metaData.height = Common::stringToUint32(valueVector[1]);
 				printf("metadata.height=%d\n", metaData.height);
-
-			} else if (Common::subStringCount(p, "streams_stream_0_duration")) {
-				string valueString;
-				valueVector = Common::splitString(p, "=");
-				valueString = valueVector[1];
-				valueString = Common::removeAllSubStrings(valueString, "\"");
-				metaData.duration = Common::stringToFloat(valueString);
-				printf("metadata.duration=%03f\n", metaData.duration);
 			}
 		}
 	}
 
-  //  printf("[%s] cmdResp:\n%s", __FUNCTION__, cmdResp.c_str());
+	cmd = string("/usr/bin/mplayer -identify -frames 0 -vo null -nosound ")
+			+ "\"" + file->getPath() + "\" 2>&1 | awk -F= '/LENGTH/{print $2}'";
+	cmdResp = ShellCmd::execute(cmd);
 
-return metaData;
+	if (cmdResp != "") {
+		metaData.duration = Common::stringToFloat(cmdResp);
+		printf("metadata.duration=%03f\n", metaData.duration);
+	}
+
+	return metaData;
 }
 
 Image* Video::getImage(string timestamp) {

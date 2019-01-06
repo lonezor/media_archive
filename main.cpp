@@ -155,7 +155,7 @@ void* execThread(void* data)
 	{
 		printf("Child %d created\n", getpid());
     	char* args[] = {"webFsEngine", path, NULL};
-		execv("/home/lonezor/project/webFileManager/webFsEngine", args);
+		execv("/home/lonezor/project/media_archive/webFsEngine", args);
     	exit(0);
 	}
 
@@ -348,6 +348,12 @@ int fileProcessingMode()
 		ReadVideoMetaDataTask* readVideoMetaDataTask = new ReadVideoMetaDataTask(file);
 		readVideoMetaDataTask->execute();
 		delete readVideoMetaDataTask;
+
+		GenerateImageTask* generateImageTask = new GenerateImageTask(file, string(outputDir),
+			GenerateImageTask::IMAGE_SIZE_ALL,
+			GenerateImageTask::THUMBNAIL_QUALITY_ALL);
+		generateImageTask->execute();
+		delete generateImageTask;
 
 		GenerateVideoTask* generateVideoTask = new GenerateVideoTask(file, string(outputDir));
 		generateVideoTask->execute();

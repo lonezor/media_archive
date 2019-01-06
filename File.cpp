@@ -268,10 +268,25 @@ void File::writeInfoFile(string path) {
 
 	if (typeIsImage()) {
 		out += string("Image\n");
+
+		// Image.Width
+		// Image.height
 	}
 
 	if (typeIsVideo()) {
 		out += string("Video\n");
+
+		if (videoMetaData.width > 0) {
+			out += string("Video.width ") + to_string(videoMetaData.width) + "\n";
+		}
+
+		if (videoMetaData.height > 0) {
+			out += string("Video.height ") + to_string(videoMetaData.height) + "\n";
+		}
+
+		if (videoMetaData.duration > 0) {
+			out += string("Video.duration ") + to_string(videoMetaData.duration) + "\n";
+		}
 	}
 
 	if (letterboxed) {

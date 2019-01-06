@@ -831,7 +831,13 @@ bool GenerateImageTask::generateImageFiles_videoSrc(imageBf_t images) {
     metaData = video->getMetadata();
 
     /* Don't take snapshot during fadeIn or before any representing image is seen. Select one in the middle */
-    timestamp = getTimestampFromDuration(metaData.duration / 2);
+    
+    if (metaData.duration < 10) {
+    	timestamp = getTimestampFromDuration(metaData.duration / 2);
+    } else {
+    	// Try to catch title screen after possible fadein phase
+    	timestamp = getTimestampFromDuration(10);
+    }
 
     image = video->getImage(timestamp);
     if (image == NULL) {
