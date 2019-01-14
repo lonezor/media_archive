@@ -7,18 +7,14 @@
 
 Video::Video(File* file) {
 	this->file = file;
-
-	memset(&metaData, 0, sizeof(metaData));
 }
 
-File::VideoMetaData Video::getMetadata() {
+void Video::readMetaData() {
 	bool result;
 	string cmd;
 	string cmdResp;
 
-	memset(&metaData, 0, sizeof(metaData));
-
-	cmd = string("/usr/bin/ffprobe  -v error -of flat=s=_ -select_streams v:0 -show_entries stream=height,width -i ")
+	cmd = string("/usr/bin/ffprobe  -v error -of flat=s=_ -select_streams v:0 -show_entries stream=height,width,duration -i ")
 			+ "\"" + file->getPath() + "\"";
 
 	cmdResp = ShellCmd::execute(cmd);
@@ -36,27 +32,31 @@ File::VideoMetaData Video::getMetadata() {
 
 			if (Common::subStringCount(p, "streams_stream_0_width")) {
 				valueVector = Common::splitString(p, "=");
-				metaData.width = Common::stringToUint32(valueVector[1]);
-				printf("metadata.width=%d\n", metaData.width);
+				width = Common::stringToUint32(valueVector[1]);
+				printf("width=%d\n", width);
 
 			} else if (Common::subStringCount(p, "streams_stream_0_height")) {
 				valueVector = Common::splitString(p, "=");
-				metaData.height = Common::stringToUint32(valueVector[1]);
-				printf("metadata.height=%d\n", metaData.height);
+				height = Common::stringToUint32(valueVector[1]);
+				printf("height=%d\n", height);
+			} else if (Common::subStringCount(p, "streams_stream_0_duration")) {
+				valueVector = Common::splitString(p, "=\"");
+				duration = Common::stringToFloat(valueVector[1]);
+				printf("duration=%f\n", duration);
 			}
 		}
 	}
 
-	cmd = string("/usr/bin/mplayer -identify -frames 0 -vo null -nosound ")
+	if (duration < 0.001) {
+		cmd = string("/usr/bin/mplayer -identify -frames 0 -vo null -nosound ")
 			+ "\"" + file->getPath() + "\" 2>&1 | awk -F= '/LENGTH/{print $2}'";
-	cmdResp = ShellCmd::execute(cmd);
+		cmdResp = ShellCmd::execute(cmd);
 
-	if (cmdResp != "") {
-		metaData.duration = Common::stringToFloat(cmdResp);
-		printf("metadata.duration=%03f\n", metaData.duration);
+		if (cmdResp != "") {
+		duration = Common::stringToFloat(cmdResp);
+		printf("duration=%03f\n", duration);
+		}
 	}
-
-	return metaData;
 }
 
 Image* Video::getImage(string timestamp) {
@@ -92,10 +92,8 @@ Image* Video::getImage(string timestamp) {
 
 	delete f;
 
-	if (metaData.width != 0) {
-		image->width  = metaData.width;
-		image->height = metaData.height;
-	}
+	image->width  = width;
+	image->height = height;
 
     return image;
 }

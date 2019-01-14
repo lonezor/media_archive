@@ -13,16 +13,16 @@ using namespace std;
 class Video : Media {
 public:
 
-
-
 	Video(File* file);
 
-	File::VideoMetaData   getMetadata(void);
-	Image*     getImage(string timestamp); /* format "HH:MM:SS.msec" */
-	bool       encode(string targetDir, string baseFileName, Resolution resolution);
+	void   readMetaData(void);
+	Image* getImage(string timestamp); /* format "HH:MM:SS.msec" */
+	bool   encode(string targetDir, string baseFileName, Resolution resolution);
 
 	File* file;
-	File::VideoMetaData metaData;
+	uint32_t width;
+	uint32_t height;
+	double duration;
 };
 
 

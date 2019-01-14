@@ -28,12 +28,6 @@ public:
 		FILE_TYPE_HASH    = 11,
 	};
 
-	struct VideoMetaData {
-		uint32_t width;
-		uint32_t height;
-		float    duration;
-	};
-
 	File(string dirPath, string name);
 
 	string                  dirPath;
@@ -47,20 +41,26 @@ public:
 	uint32_t                completelyProcessedImagesTs;
 	uint32_t                completelyProcessedVideosTs;
 	std::map<string,string> imageMetaDataMap;
-	std::map<string,string> supportedImageMetaDataKeyMap;
-	VideoMetaData           videoMetaData;
+	std::map<string,string> supportedMetaDataKeyMap;
 	bool                    imageRotationRequired;
 	bool                    letterboxed;
+	uint32_t                width;
+	uint32_t                height;
+	float                   duration;
 
 	void   analyze();
 	string getPath();
 	string getNameWithoutFileType();
 	string getFileEnding();
 	void   print();
-	void   populateSupportedImageMetaDataKeyMap(void);
+	void   populateSupportedMetaDataKeyMap(void);
 	void   addMetaData(string key, string value);
 	string getMetaData(string key);
 	string getHashString(void);
+
+	uint32_t getWidth();
+	uint32_t getHeight();
+	uint32_t getDuration();
 
 	void determineFileType();
 	void calculateCheckSum();

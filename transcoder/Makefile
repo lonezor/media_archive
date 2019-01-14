@@ -49,10 +49,13 @@ OBJ=	main.o \
 %.o: %.cpp $(HDR)
 	$(CC) $(CXX_FLAGS) -c $<
 
-webFsEngine: $(OBJ)
+mtrans: $(OBJ)
 	$(CC) -o $@  *.o $(LIBS)
 
-all: webFsEngine
+all: mtrans
+
+install:
+	cp -f mtrans /usr/bin
 
 clean:
 	rm -f *.o

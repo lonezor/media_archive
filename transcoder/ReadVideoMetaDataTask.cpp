@@ -12,7 +12,11 @@ void ReadVideoMetaDataTask::execute() {
 
 		video = new Video(file);
 
-		file->videoMetaData = video->getMetadata();
+		video->readMetaData();
+		file->addMetaData("Video", "");
+		file->addMetaData("Video.Width", to_string(video->width));
+		file->addMetaData("Video.Height", to_string(video->height));
+		file->addMetaData("Video.Duration", to_string(video->duration));
 
 		delete video;
 	}

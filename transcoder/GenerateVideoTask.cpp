@@ -20,7 +20,6 @@ void GenerateVideoTask::execute() {
 	bool result;
 	pid_t pid;
 	Video* video;
-	File::VideoMetaData metaData;
 	bool encode_1k = TRUE;
 	bool encode_2k = FALSE;
 	bool encode_4k = FALSE;
@@ -37,25 +36,25 @@ void GenerateVideoTask::execute() {
 
 	video = new Video(file);
 
-	metaData = video->getMetadata();
+	video->readMetaData();
 
 	/* Landscape orientation */
-	if (file->videoMetaData.width > file->videoMetaData.height) {
-		if (file->videoMetaData.width > 3000) {
+	if (video->width > video->height) {
+		if (video->width > 3000) {
 			encode_4k = TRUE;
 		}
 
-		if (file->videoMetaData.width > 1800) {
+		if (video->width > 1800) {
 			encode_2k = TRUE;
 		}
 
 		/* Portrait orientation */
 	} else {
-		if (file->videoMetaData.height > 3000) {
+		if (video->height > 3000) {
 			encode_4k = TRUE;
 		}
 
-		if (file->videoMetaData.height > 1800) {
+		if (video->height > 1800) {
 			encode_2k = TRUE;
 		}
 	}

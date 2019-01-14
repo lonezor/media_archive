@@ -660,6 +660,8 @@ bool GenerateImageTask::generateImageFiles_imageSrc(imageBf_t images) {
 		uint32_t  j;
 		uint32_t  size;
 		uint32_t  quality;
+		uint32_t  imgWidthInfo = 0;
+		uint32_t  imgHeightInfo = 0;
 		FIBITMAP* bitmap = NULL;
 		FIBITMAP* thumbNailBitmap;
 		FIBITMAP* rgbaBitmap;
@@ -689,6 +691,12 @@ bool GenerateImageTask::generateImageFiles_imageSrc(imageBf_t images) {
 			uint32_t thumbNailWidth  = getImageWidth((ImageSize)size);
 			uint32_t thumbNailHeight = getImageHeight((ImageSize)size);
 			float    aspectRatio     = (float)width / (float)height;
+
+			/* Save original image size */
+			if (firstIteration) {
+				imgWidthInfo = width;
+				imgHeightInfo = height;
+			}
 
 			/* image size has not been requested, nothing to do */
 			if ((size & images.size) == 0) {
@@ -775,6 +783,9 @@ bool GenerateImageTask::generateImageFiles_imageSrc(imageBf_t images) {
 		// Move original file
 		FileSystem::moveFile(file->getPath(), targetDirName + "/" + file->getHashString());
 
+		file->addMetaData("Image", "");
+		file->addMetaData("Image.Width", to_string(imgWidthInfo));
+		file->addMetaData("Image.Height", to_string(imgHeightInfo));
 		file->writeInfoFile(targetDirName + "/" + file->getHashString() + ".info");
 
 		if (result) {
@@ -815,7 +826,6 @@ bool GenerateImageTask::generateImageFiles_videoSrc(imageBf_t images) {
     Video* video;
     Image* image;
     Image* thumbNailImage;
-    File::VideoMetaData metaData;
     string timestamp;
     bool firstIteration;
     uint32_t  i;
@@ -828,12 +838,13 @@ bool GenerateImageTask::generateImageFiles_videoSrc(imageBf_t images) {
 
     video = new Video(file);
 
-    metaData = video->getMetadata();
+    video->readMetaData();
 
     /* Don't take snapshot during fadeIn or before any representing image is seen. Select one in the middle */
     
-    if (metaData.duration < 10) {
-    	timestamp = getTimestampFromDuration(metaData.duration / 2);
+    uint32_t duration = video->duration;
+    if (duration < 10) {
+    	timestamp = getTimestampFromDuration(duration / 2);
     } else {
     	// Try to catch title screen after possible fadein phase
     	timestamp = getTimestampFromDuration(10);

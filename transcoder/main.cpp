@@ -154,8 +154,8 @@ void* execThread(void* data)
 	else 
 	{
 		printf("Child %d created\n", getpid());
-    	char* args[] = {"webFsEngine", path, NULL};
-		execv("/home/lonezor/project/media_archive/webFsEngine", args);
+    	char* args[] = {"mtrans", path, NULL};
+		execv("/usr/bin/mtrans", args);
     	exit(0);
 	}
 
