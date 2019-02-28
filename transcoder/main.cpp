@@ -154,8 +154,8 @@ void* execThread(void* data)
 	else 
 	{
 		printf("Child %d created\n", getpid());
-    	char* args[] = {"mtrans", path, NULL};
-		execv("/usr/bin/mtrans", args);
+    	char* args[] = {"mtransc", path, NULL};
+		execv("/usr/bin/mtransc", args);
     	exit(0);
 	}
 
@@ -303,9 +303,11 @@ int fileProcessingMode()
 	file->analyze();
 	file->print();
 
-	GenerateSrcFileHashTask* generateSrcFileHashTask = new GenerateSrcFileHashTask(file);
-	generateSrcFileHashTask->execute();
-	delete generateSrcFileHashTask;
+	if (file->getHashString() == "") {
+		GenerateSrcFileHashTask* generateSrcFileHashTask = new GenerateSrcFileHashTask(file);
+		generateSrcFileHashTask->execute();
+		delete generateSrcFileHashTask;
+	}
 
 	// HEIC file must be converted to JPG
 	if (file->type == File::FILE_TYPE_HEIC) {
@@ -333,15 +335,65 @@ int fileProcessingMode()
 	}
 
 	if (file->typeIsImage()) {
+		printf("------------------------------------------------> image found!\n");
 		ReadImageMetaDataTask* readImageMetaDataTask = new ReadImageMetaDataTask(file);
 		readImageMetaDataTask->execute();
 		delete readImageMetaDataTask;
+
+		// TODO: do not generate sizes that are beyond the src file
 
 		GenerateImageTask* generateImageTask = new GenerateImageTask(file, string(outputDir),
 			GenerateImageTask::IMAGE_SIZE_ALL,
 			GenerateImageTask::THUMBNAIL_QUALITY_ALL);
 		generateImageTask->execute();
 		delete generateImageTask;
+	}
+
+	else if (file->typeIsAnimation()) {
+		printf("------------------------------------------------> animation found!\n");
+
+		printf("origAnimation: %d\n", file->origAnimation);
+
+		// Convert still image for thumbnail generation (no high res version)
+		char cmd[2048];
+		snprintf(cmd, sizeof(cmd), "convert %s /tmp/%s.jpg",
+			file->getPath().c_str(), file->getHashString().c_str());
+		printf("cmd %s\n", cmd);
+		system(cmd);
+
+		char srcImage[1024];
+		snprintf(srcImage, sizeof(srcImage), "%s-0.jpg",
+			file->getHashString().c_str());
+		printf("srcImageP %s\n", srcImage);
+
+		File* file2 = new File(string("/tmp"), string(srcImage));
+	    file2->analyze();
+
+	    memcpy(file2->hash, file->hash, sizeof(file->hash));
+	    file2->size = file->size;
+        file2->fsModifiedTs = file->fsModifiedTs;
+        file2->origAnimation = file->origAnimation;
+
+	    ReadImageMetaDataTask* readImageMetaDataTask = new ReadImageMetaDataTask(file2);
+		readImageMetaDataTask->execute();
+		delete readImageMetaDataTask;
+
+		GenerateImageTask* generateImageTask = new GenerateImageTask(file2, string(outputDir),
+			GenerateImageTask::IMAGE_SIZE_THUMBNAIL_ALL,
+			GenerateImageTask::THUMBNAIL_QUALITY_ALL);
+		generateImageTask->execute();
+		delete generateImageTask;
+
+		delete file2;
+
+		// Move original (typically low resolution image with loopable animation intact)
+		jpgPath[0] = 'y'; // handled below
+
+		// Cleanup
+		snprintf(cmd, sizeof(cmd), "rm -fv /tmp/%s-*.jpg",
+			file->getHashString().c_str());
+		printf("cmd %s\n", cmd);
+		system(cmd);
 	}
 
 	else if (file->typeIsVideo()) {
@@ -360,7 +412,7 @@ int fileProcessingMode()
 		delete generateVideoTask;
 	}
 
-	// Copy original HEIC file, if applicable
+	// Move original file, if applicable
 	if (jpgPath[0]) {
 		FileSystem::moveFile(string(inputFile), string(outputDir) + "/" + file->getHashString());
 	}

@@ -16,16 +16,17 @@ public:
 	enum FileType {
 		FILE_TYPE_UNKNOWN = 0,
 		FILE_TYPE_JPG     = 1,
-		FILE_TYPE_PNG     = 2,
-		FILE_TYPE_HEIC    = 3,
-		FILE_TYPE_MTS     = 4,
-		FILE_TYPE_MPG     = 5,
-		FILE_TYPE_MKV     = 6,
-		FILE_TYPE_AVI     = 7,
-		FILE_TYPE_MP4     = 8,
-		FILE_TYPE_WMV     = 9,
-		FILE_TYPE_WEBM    = 10,
-		FILE_TYPE_HASH    = 11,
+		FILE_TYPE_GIF     = 2,
+		FILE_TYPE_PNG     = 3,
+		FILE_TYPE_HEIC    = 4,
+		FILE_TYPE_MTS     = 5,
+		FILE_TYPE_MPG     = 6,
+		FILE_TYPE_MKV     = 7,
+		FILE_TYPE_AVI     = 8,
+		FILE_TYPE_MP4     = 9,
+		FILE_TYPE_WMV     = 10,
+		FILE_TYPE_WEBM    = 11,
+		FILE_TYPE_HASH    = 12,
 	};
 
 	File(string dirPath, string name);
@@ -33,6 +34,7 @@ public:
 	string                  dirPath;
 	string                  name;
 	FileType                type;
+	bool                    origAnimation;
 	uint32_t                size;
 	uint32_t                fsModifiedTs;      /* Timestamp of last file change according to file system record  */
 	uint8_t                 hash[FILE_HASH_SIZE];
@@ -68,6 +70,7 @@ public:
 	void writeInfoFile(string path);
 
 	bool typeIsImage();
+	bool typeIsAnimation();
 	bool typeIsVideo();
 	bool typeIsHash();
 };

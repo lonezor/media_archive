@@ -256,6 +256,8 @@ FREE_IMAGE_FORMAT GenerateImageTask::getFreeImageFormat(File::FileType fileType)
 	switch (fileType) {
 	    case File::FILE_TYPE_JPG:
 	    	return FIF_JPEG;
+	    case File::FILE_TYPE_GIF:
+	    	return FIF_GIF;
 	    case File::FILE_TYPE_PNG:
 	    	return FIF_PNG;
 	    case File::FILE_TYPE_UNKNOWN:
@@ -692,6 +694,8 @@ bool GenerateImageTask::generateImageFiles_imageSrc(imageBf_t images) {
 			uint32_t thumbNailHeight = getImageHeight((ImageSize)size);
 			float    aspectRatio     = (float)width / (float)height;
 
+			printf(":::::::::::::::::::::::::::: %u %u\n", width, thumbNailWidth);
+
 			/* Save original image size */
 			if (firstIteration) {
 				imgWidthInfo = width;
@@ -702,6 +706,8 @@ bool GenerateImageTask::generateImageFiles_imageSrc(imageBf_t images) {
 			if ((size & images.size) == 0) {
 				continue;
 			}
+
+			/* image source too small for current size */
 
 			/* Regular 4:3 aspect ratio, thumb nail can be created directly */
 			if (floatIsAlmostEqualTo(aspectRatio, ASPECT_RATIO_4_3)) {
@@ -728,7 +734,7 @@ bool GenerateImageTask::generateImageFiles_imageSrc(imageBf_t images) {
 
 				/* Save non letterboxed (but horizontally scaled) version    *
 				 * of the file. This is useful for user downloads.      	 */
-				if (firstIteration) {
+				if (firstIteration && !file->origAnimation) {
 					result = generateImageFiles_imageSrc_createNonLetterBoxedImage(file, bitmap, aspectRatio, targetDirName);
 					firstIteration = FALSE;
 				}
@@ -783,9 +789,17 @@ bool GenerateImageTask::generateImageFiles_imageSrc(imageBf_t images) {
 		// Move original file
 		FileSystem::moveFile(file->getPath(), targetDirName + "/" + file->getHashString());
 
-		file->addMetaData("Image", "");
-		file->addMetaData("Image.Width", to_string(imgWidthInfo));
-		file->addMetaData("Image.Height", to_string(imgHeightInfo));
+		if (file->origAnimation) {
+			file->addMetaData("Animation", "");
+			file->addMetaData("Animation.Width", to_string(imgWidthInfo));
+			file->addMetaData("Animation.Height", to_string(imgHeightInfo));
+		}
+		else {
+			file->addMetaData("Image", "");
+			file->addMetaData("Image.Width", to_string(imgWidthInfo));
+			file->addMetaData("Image.Height", to_string(imgHeightInfo));
+		}
+
 		file->writeInfoFile(targetDirName + "/" + file->getHashString() + ".info");
 
 		if (result) {

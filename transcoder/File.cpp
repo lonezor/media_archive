@@ -1,12 +1,15 @@
 #include "File.h"
 #include "general.h"
 
+#include <iostream>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <string>
-#include <iostream>
+
+#include "GenerateSrcFileHashTask.h"
 
 using namespace std;
 
@@ -64,6 +67,8 @@ void File::determineFileType() {
 
     	if (memcmp(ending, ".jpg", sizeof(ending)) == 0) {
     		type = FILE_TYPE_JPG;
+    	} else if (memcmp(ending, ".gif", sizeof(ending)) == 0) {
+    		type = FILE_TYPE_GIF;
     	} else if (memcmp(ending, ".png", sizeof(ending)) == 0) {
     		type = FILE_TYPE_PNG;
     	} else if (memcmp(ending, ".heic", sizeof(ending)) == 0) {
@@ -99,6 +104,7 @@ void File::analyze() {
     stat(path.c_str(), &sb);
     this->size         = sb.st_size;
     this->fsModifiedTs = (uint32_t)sb.st_mtim.tv_sec;
+    origAnimation = false;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/
@@ -146,6 +152,9 @@ void File::populateSupportedMetaDataKeyMap() {
 	supportedMetaDataKeyMap["Image"]                           = "Media Info";
 	supportedMetaDataKeyMap["Image.Width"]                     = "Media Info";
 	supportedMetaDataKeyMap["Image.Height"]                    = "Media Info";
+	supportedMetaDataKeyMap["Animation"]                       = "Media Info";
+	supportedMetaDataKeyMap["Animation.Width"]                 = "Media Info";
+	supportedMetaDataKeyMap["Animation.Height"]                = "Media Info";
 	supportedMetaDataKeyMap["Video"]                           = "Media Info";
 	supportedMetaDataKeyMap["Video.Width"]                     = "Media Info";
 	supportedMetaDataKeyMap["Video.Height"]                    = "Media Info";
@@ -272,6 +281,8 @@ void File::writeInfoFile(string path) {
 	map<string, string>::iterator it;
 	string out = "";
 
+	//out += string("SourceFormat " + ); // TODO
+
 	if (letterboxed) {
 		out += string("Orientation Portrait\n");
 	} else {
@@ -378,9 +389,23 @@ void File::writeInfoFile(string path) {
 /*-------------------------------------------------------------------------------------------------------------------*/
 
 string File::getHashString() {
+	bool hashAvailable = false;
+
+	// Has hash been generated?
+	uint32_t i;
+	for(i=0; i<sizeof(hash); i++) {
+		if (hash[i]) {
+			hashAvailable = true;
+			break;
+		}
+	}
+
+	if (!hashAvailable) {
+		return string("");
+	}
+
 	char str[50];
 	char hex[3];
-	uint32_t i;
 	uint32_t left = sizeof(str) - 1;
 
 	str[0] = 0;
@@ -395,9 +420,61 @@ string File::getHashString() {
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/
+
+bool File::typeIsAnimation()
+{
+	// Unique evaluatation directory is needed. File hashing must be done earlier
+	GenerateSrcFileHashTask* generateSrcFileHashTask = new GenerateSrcFileHashTask(this);
+	generateSrcFileHashTask->execute();
+	delete generateSrcFileHashTask;
+
+	char outDir[512];
+	snprintf(outDir, sizeof(outDir), "/tmp/%s", getHashString().c_str());
+
+	char cmd[1024];
+	snprintf(cmd, sizeof(cmd), "mkdir -p %s", outDir);
+	system(cmd);
+
+
+	snprintf(cmd, sizeof(cmd), "ffmpeg -i %s %s/output_%%04d.png", getPath().c_str(), outDir);
+	system(cmd);
+
+	// If multiple files are found it is an animation
+	int nrFiles = 0;
+	snprintf(cmd, sizeof(cmd), "ls -l %s | wc -l", outDir);
+	FILE* pFile = popen(cmd, "r");
+	char line[128];
+	fgets(line, sizeof(line), pFile);
+	sscanf(line, "%d\n", &nrFiles);
+	nrFiles--; // Ignore first status line
+	fclose(pFile);
+
+	snprintf(cmd, sizeof(cmd), "rm -rf %s", outDir);
+	printf("cmd %s\n", cmd);
+	system(cmd);
+
+	return (nrFiles > 1);
+}
+
+/*-------------------------------------------------------------------------------------------------------------------*/
+
 bool File::typeIsImage() {
-	return (type == FILE_TYPE_JPG || type == FILE_TYPE_PNG || 
-		    type == FILE_TYPE_HEIC);
+
+	// GIF will be transcoded unless it is an animation (which may be designed as loopable and a video doesn't apply either)
+	if (type == FILE_TYPE_GIF && typeIsAnimation()) {
+		origAnimation = true;
+		return false;
+	}
+
+	switch (type) {
+		case FILE_TYPE_GIF:
+		case FILE_TYPE_JPG:
+		case FILE_TYPE_PNG:
+		case FILE_TYPE_HEIC:
+			return true;
+		default:
+			return false;
+	}
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/
@@ -408,6 +485,8 @@ bool File::typeIsVideo() {
 	        type == FILE_TYPE_MP4 || type == FILE_TYPE_WMV ||
 	        type == FILE_TYPE_WEBM);
 }
+
+/*-------------------------------------------------------------------------------------------------------------------*/
 
 bool File::typeIsHash() {
 	return type == FILE_TYPE_HASH;

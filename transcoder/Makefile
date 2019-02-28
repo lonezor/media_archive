@@ -49,13 +49,13 @@ OBJ=	main.o \
 %.o: %.cpp $(HDR)
 	$(CC) $(CXX_FLAGS) -c $<
 
-mtrans: $(OBJ)
+mtransc: $(OBJ)
 	$(CC) -o $@  *.o $(LIBS)
 
-all: mtrans
+all: mtransc
 
 install:
-	cp -f mtrans /usr/bin
+	cp -f mtransc /usr/bin
 
 clean:
 	rm -f *.o

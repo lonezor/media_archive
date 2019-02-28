@@ -99,6 +99,8 @@ FREE_IMAGE_FORMAT ReadImageMetaDataTask::getFreeImageFormat(File::FileType fileT
 	switch (fileType) {
 	    case File::FILE_TYPE_JPG:
 	    	return FIF_JPEG;
+	    case File::FILE_TYPE_GIF:
+	    	return FIF_GIF;
 	    case File::FILE_TYPE_PNG:
 	    	return FIF_PNG;
 	    case File::FILE_TYPE_UNKNOWN:
