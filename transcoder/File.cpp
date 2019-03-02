@@ -449,7 +449,7 @@ bool File::typeIsAnimation()
 	nrFiles--; // Ignore first status line
 	fclose(pFile);
 
-	snprintf(cmd, sizeof(cmd), "rm -rf %s", outDir);
+	snprintf(cmd, sizeof(cmd), "rm -rfv %s", outDir);
 	printf("cmd %s\n", cmd);
 	system(cmd);
 

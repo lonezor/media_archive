@@ -27,9 +27,10 @@ public:
 		IMAGE_SIZE_HIGH_RES_1K         = 0x08, /* 1024x768                */
 		IMAGE_SIZE_HIGH_RES_2K         = 0x10, /* 2048x1536               */
 		IMAGE_SIZE_HIGH_RES_4K         = 0x20, /* 4096x3072               */
-		IMAGE_SIZE_HIGH_RES_ALL        = 0x38, /* All high res sizes      */
-		IMAGE_SIZE_LARGEST             = 0x20, /* For backwards traversal */
-		IMAGE_SIZE_ALL                 = 0x3f, /* All existing sizes      */
+		IMAGE_SIZE_HIGH_RES_8K         = 0x40, /* 8192x6144               */
+		IMAGE_SIZE_HIGH_RES_ALL        = 0x78, /* All high res sizes      */
+		IMAGE_SIZE_LARGEST             = 0x40, /* For backwards traversal */
+		IMAGE_SIZE_ALL                 = 0x7f, /* All existing sizes      */
 	};
 
 	enum ThumbNailQuality {
@@ -75,7 +76,7 @@ public:
 	void              generateImageFiles_imageSrc_autoRotate(File* file, FIBITMAP** bitmap);
 	FIBITMAP*         generateImageFiles_imageSrc_createLetterBoxedThumbNail(FIBITMAP* bitmap, uint32_t width, uint32_t height,
 			                                                                  uint32_t thumbNailWidth, uint32_t thumbNailHeight, float aspectRatio);
-	bool              generateImageFiles_imageSrc_createNonLetterBoxedImage(File* file, FIBITMAP* bitmap, float aspectRatio, string targetDirName);
+	bool              generateImageFiles_imageSrc_createNonLetterBoxedImage(File* file, FIBITMAP* bitmap, uint32_t width, float aspectRatio, string targetDirName);
 	bool              generateImageFiles_videoSrc(imageBf_t images);
 	string            getTimestampFromDuration(float duration);
 

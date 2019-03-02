@@ -300,7 +300,8 @@ uint32_t GenerateImageTask::getFreeImageSaveFlags(ThumbNailQuality quality, Imag
 
 	if (size == IMAGE_SIZE_HIGH_RES_1K ||
 		size == IMAGE_SIZE_HIGH_RES_2K ||
-	    size == IMAGE_SIZE_HIGH_RES_4K) {
+	    size == IMAGE_SIZE_HIGH_RES_4K ||
+	    size == IMAGE_SIZE_HIGH_RES_8K) {
 		flags |= 95;
 	}
 	else if (quality == THUMBNAIL_QUALITY_HIGH) {
@@ -613,14 +614,19 @@ void GenerateImageTask::generateImageFiles_imageSrc_loadImageFile(File* file, FI
 				           	getFreeImageLoadFlags(file->type));
 }
 
-bool GenerateImageTask::generateImageFiles_imageSrc_createNonLetterBoxedImage(File* file, FIBITMAP* bitmap, float aspectRatio, string targetDirName) {
+bool GenerateImageTask::generateImageFiles_imageSrc_createNonLetterBoxedImage(File* file, FIBITMAP* bitmap, uint32_t width, float aspectRatio, string targetDirName) {
 	FIBITMAP* scaledNonLetterBoxedBitmap;
 	FIBITMAP* tmpBitmap;
 	string    path;
-	float     newWidth = 4096;
+	float     newWidth = 8192; // scale down to highest thumbnail resolution if very large
 	float     newHeight;
 	bool saveResult;
 	bool result = TRUE;
+
+    // never upscale
+	if (width < newWidth) {
+		newWidth = width;
+	}
 
 	newHeight = ceil(newWidth / aspectRatio);
 
@@ -707,6 +713,11 @@ bool GenerateImageTask::generateImageFiles_imageSrc(imageBf_t images) {
 				continue;
 			}
 
+			/* don't generate upscaled thumbnails. Allow minor difference */
+			if (thumbNailWidth > 1024 && thumbNailWidth - 256  > width) {
+				continue;
+			}
+
 			/* image source too small for current size */
 
 			/* Regular 4:3 aspect ratio, thumb nail can be created directly */
@@ -735,7 +746,7 @@ bool GenerateImageTask::generateImageFiles_imageSrc(imageBf_t images) {
 				/* Save non letterboxed (but horizontally scaled) version    *
 				 * of the file. This is useful for user downloads.      	 */
 				if (firstIteration && !file->origAnimation) {
-					result = generateImageFiles_imageSrc_createNonLetterBoxedImage(file, bitmap, aspectRatio, targetDirName);
+					result = generateImageFiles_imageSrc_createNonLetterBoxedImage(file, bitmap, width, aspectRatio, targetDirName);
 					firstIteration = FALSE;
 				}
 			}
@@ -975,6 +986,8 @@ uint32_t GenerateImageTask::getImageWidth(ImageSize size) {
 			return 2048;
 	    case IMAGE_SIZE_HIGH_RES_4K:
 	    	return 4096;
+	    case IMAGE_SIZE_HIGH_RES_8K:
+	    	return 8192;
 	    case IMAGE_SIZE_UNKNOWN:
 	    case IMAGE_SIZE_THUMBNAIL_ALL:
 	    case IMAGE_SIZE_HIGH_RES_ALL:
@@ -999,6 +1012,8 @@ uint32_t GenerateImageTask::getImageHeight(ImageSize size) {
 			return 1536;
 	    case IMAGE_SIZE_HIGH_RES_4K:
 	    	return 3072;
+	    case IMAGE_SIZE_HIGH_RES_8K:
+	    	return 6144;
 	    case IMAGE_SIZE_UNKNOWN:
 	    case IMAGE_SIZE_THUMBNAIL_ALL:
 	    case IMAGE_SIZE_HIGH_RES_ALL:
@@ -1030,6 +1045,9 @@ string GenerateImageTask::getImageSizeSuffix(ImageSize size) {
 		break;
 	case IMAGE_SIZE_HIGH_RES_4K:
 		sizeSuffix = "_4096";
+		break;
+	case IMAGE_SIZE_HIGH_RES_8K:
+		sizeSuffix = "_8192";
 		break;
     case IMAGE_SIZE_UNKNOWN:
     case IMAGE_SIZE_THUMBNAIL_ALL:

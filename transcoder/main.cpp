@@ -96,7 +96,7 @@ void parseArguments(int argc, char* argv[]) {
 /*-------------------------------------------------------------------------------------------------------------------*/
 
 void fsFileEventCb(FileSystem::FileSystemEvent event, uint32_t timestamp, File* file, Directory* affectedDirectory, void* userData) {
-	if (file->typeIsImage() || file->typeIsVideo()) {
+	if (file->typeIsImage() || file->typeIsAnimation() || file->typeIsVideo()) {
 		string path = file->getPath();
 
 		struct tm* timeInfo;
@@ -153,7 +153,7 @@ void* execThread(void* data)
 	// Child
 	else 
 	{
-		printf("Child %d created\n", getpid());
+		printf("Child %d created for path %s\n", getpid(), path);
     	char* args[] = {"mtransc", path, NULL};
 		execv("/usr/bin/mtransc", args);
     	exit(0);
@@ -178,6 +178,8 @@ void* queueThread(void* data)
 			if (path) {
 				pthread_t thread;
 				int res = 0;
+
+				printf("[%s] path %s\n", __FUNCTION__, path);
 
 				res = pthread_create(&thread, NULL, execThread, path);
 				if (res != 0) {
@@ -390,7 +392,7 @@ int fileProcessingMode()
 		jpgPath[0] = 'y'; // handled below
 
 		// Cleanup
-		snprintf(cmd, sizeof(cmd), "rm -fv /tmp/%s-*.jpg",
+		snprintf(cmd, sizeof(cmd), "rm -f /tmp/%s-*.jpg",
 			file->getHashString().c_str());
 		printf("cmd %s\n", cmd);
 		system(cmd);

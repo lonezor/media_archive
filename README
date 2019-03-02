@@ -1,3 +1,36 @@
+The media archive is intended to be a long term storage and query system for media files.
+It is mainly intended for camera files, computer generated images, audio files and video
+files. By tagging the data with key-value pairs in a relational database and using a
+Wireshark like search filter data can be found very precisely.
+
+Before uploading files the user needs to tag the data in a consistent way. The tool will
+also help sorting out duplicates and allow the inclusion of additional meta data. EXIF
+information will be included by default.
+
+Media Transcoder
+~~~~~~~~~~~~~~~
+Image
+ - JPG, HEIC and PNG handled differently. Mainly to support EXIF data and very large PNG files and
+   since PNG is used for early presentation
+ - Fallback to Image Magic that converts image to 24bit PNG and then follows the normal flow
+Image Sequence
+ - GIF. If just a frame, convert to PNG via ffMPEG. Otherwise keep GIF format (loopable animation)
+Audio
+ - Any format converted to WAV via sox. Then visualized using Libsndfile and LibCairo and converted
+   to x265 video with AAC as audio format using ffMPEG. The visualization will cover elapsed time,
+   an overview waveform with progress line as well as a big horizontal line that will bounce as audio
+   is being played. Some slow color coding may be used and possible a picture of the album/title.
+   The output is rendered in 4k, 2k and 1k in 16:9 format.
+Video
+ - Any format converted to x265 with ffMPEG and stored in its original aspect ratio.
+
+All media files will get thumbnail files in various sizes and quality. Then based on what's
+available (up to) 1k, 2k, 4k files are generated. If 4:3 letterbox thumbnails have been generated
+then a separate high res download file is available without the letterbox. Then for archive
+purposes the original file is saved.
+
+All output files are prefixed with the SHA1 sum of the original data. The original file only
+has the SHA1 name as file name.
 
 Project Dependencies:
 ######################
