@@ -319,11 +319,35 @@ int fileProcessingMode()
 		// Create temporary file in a dir not monitored by inotify
 		string sha1 = file->getHashString();
 		snprintf(jpgPath, sizeof(jpgPath), "/tmp/%s.jpg", sha1.c_str());
-		snprintf(cmd, sizeof(cmd), "tifig -p \"%s\" -q 97 -v %s", inputFile, jpgPath);
+		snprintf(cmd, sizeof(cmd), "tifig -p \"%s\" -q 97 -v %s", inputFile, jpgPath); // meta data will be included
 		system(cmd);
 		delete file;
 
 		// We want to keep original HEIC file. Therefore we use its sha1
+		uint8_t hash[FILE_HASH_SIZE];
+		memcpy(hash, file->hash, sizeof(hash));
+
+		// Read new version of file
+		str3 = strdup(jpgPath);
+		file = new File(string("/tmp"), string(basename(str3)));
+		file->analyze();
+		file->print();
+
+		memcpy(file->hash, hash, sizeof(hash));
+	}
+	else if (file->type == File::FILE_TYPE_TIF) {
+		// Must be converted to JPG
+		printf("Converting TIF file to JPG...\n");
+		char cmd[2048];
+
+		// Create temporary file in a dir not monitored by inotify
+		string sha1 = file->getHashString();
+		snprintf(jpgPath, sizeof(jpgPath), "/tmp/%s.jpg", sha1.c_str());
+		snprintf(cmd, sizeof(cmd), "convert \"%s\" %s", inputFile, jpgPath); // no meta data
+		system(cmd);
+		delete file;
+
+		// We want to keep original TIF file. Therefore we use its sha1
 		uint8_t hash[FILE_HASH_SIZE];
 		memcpy(hash, file->hash, sizeof(hash));
 

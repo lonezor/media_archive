@@ -19,14 +19,15 @@ public:
 		FILE_TYPE_GIF     = 2,
 		FILE_TYPE_PNG     = 3,
 		FILE_TYPE_HEIC    = 4,
-		FILE_TYPE_MTS     = 5,
-		FILE_TYPE_MPG     = 6,
-		FILE_TYPE_MKV     = 7,
-		FILE_TYPE_AVI     = 8,
-		FILE_TYPE_MP4     = 9,
-		FILE_TYPE_WMV     = 10,
-		FILE_TYPE_WEBM    = 11,
-		FILE_TYPE_HASH    = 12,
+		FILE_TYPE_TIF     = 5,
+		FILE_TYPE_MTS     = 6,
+		FILE_TYPE_MPG     = 7,
+		FILE_TYPE_MKV     = 8,
+		FILE_TYPE_AVI     = 9,
+		FILE_TYPE_MP4     = 10,
+		FILE_TYPE_WMV     = 11,
+		FILE_TYPE_WEBM    = 12,
+		FILE_TYPE_HASH    = 13,
 	};
 
 	File(string dirPath, string name);

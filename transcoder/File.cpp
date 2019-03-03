@@ -73,6 +73,8 @@ void File::determineFileType() {
     		type = FILE_TYPE_PNG;
     	} else if (memcmp(ending, ".heic", sizeof(ending)) == 0) {
     		type = FILE_TYPE_HEIC;
+    	} else if (memcmp(ending, ".tif", sizeof(ending)) == 0) {
+    		type = FILE_TYPE_TIF;
     	} else if (memcmp(ending, ".mts", sizeof(ending)) == 0) {
     	    type = FILE_TYPE_MTS;
     	} else if (memcmp(ending, ".mpg", sizeof(ending)) == 0) {
@@ -423,6 +425,10 @@ string File::getHashString() {
 
 bool File::typeIsAnimation()
 {
+	if (type != FILE_TYPE_GIF) {
+		return false;
+	}
+
 	// Unique evaluatation directory is needed. File hashing must be done earlier
 	GenerateSrcFileHashTask* generateSrcFileHashTask = new GenerateSrcFileHashTask(this);
 	generateSrcFileHashTask->execute();
@@ -471,6 +477,7 @@ bool File::typeIsImage() {
 		case FILE_TYPE_JPG:
 		case FILE_TYPE_PNG:
 		case FILE_TYPE_HEIC:
+		case FILE_TYPE_TIF:
 			return true;
 		default:
 			return false;

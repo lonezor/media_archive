@@ -59,10 +59,16 @@ void GenerateVideoTask::execute() {
 		}
 	}
 
-	/* 1k encoding */ //ffmpeg -i input -c:v libx265 -crf 28 -c:a aac -b:a 128k output.mp4
+	float aspectRatio = (float)video->width / (float)video->height;
+
+	printf("width %d height %d aspectRatio %f\n", video->width, video->height, aspectRatio);
+	char arStr[16];
+	snprintf(arStr, sizeof(arStr), "%f", aspectRatio);
+
+	/* 1k encoding */
 	cmd = "/usr/bin/ffmpeg -i \"" + file->getPath() + "\" -passlogfile /tmp/" + file->getHashString() +
-			" -c:v libx265 -crf 28 -cpu-used 0 -threads 1 -s "
-			"1024x576 -aspect 16:9 -y \"" + targetDirName + "/" + file->getHashString()
+			" -c:v libx265 -crf 27 -cpu-used 0 -threads 1 -s "
+			"1024x576 -aspect " + string(arStr) + " -y \"" + targetDirName + "/" + file->getHashString()
 			+ "_1k.mp4\"";
 	printf("cmd '%s'\n", cmd.c_str());
 	ShellCmd::execute(cmd);
@@ -73,8 +79,8 @@ void GenerateVideoTask::execute() {
 
 	if (encode_2k) {
 		cmd = "/usr/bin/ffmpeg -i \"" + file->getPath() + "\" -passlogfile /tmp/" + file->getHashString() +
-			" -c:v libx265 -crf 28 -cpu-used 0 -threads 1 -s "
-			"1920x1080 -aspect 16:9 -y \"" + targetDirName + "/" + file->getHashString()
+			" -c:v libx265 -crf 27 -cpu-used 0 -threads 1 -s "
+			"1920x1080 -aspect " + string(arStr) + " -y \"" + targetDirName + "/" + file->getHashString()
 			+ "_2k.mp4\"";
 		printf("cmd '%s'\n", cmd.c_str());
 		ShellCmd::execute(cmd);
@@ -86,8 +92,8 @@ void GenerateVideoTask::execute() {
 
 	if (encode_4k) {
 		cmd = "/usr/bin/ffmpeg -i \"" + file->getPath() + "\" -passlogfile /tmp/" + file->getHashString() +
-			" -c:v libx265 -crf 28 -cpu-used 0 -threads 1 -s "
-			"3840x2160 -aspect 16:9 -y \"" + targetDirName + "/" + file->getHashString()
+			" -c:v libx265 -crf 27 -cpu-used 0 -threads 1 -s "
+			"3840x2160 -aspect " + string(arStr) + " -y \"" + targetDirName + "/" + file->getHashString()
 			+ "_4k.mp4\"";
 		printf("cmd '%s'\n", cmd.c_str());
 		ShellCmd::execute(cmd);
