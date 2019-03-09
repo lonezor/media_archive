@@ -38,61 +38,71 @@ File::File(string dirPath, string name) {
 
 /*-------------------------------------------------------------------------------------------------------------------*/
 
+bool File::endsWith(const string& s, const string& suffix)
+{
+    return s.rfind(suffix) == (s.size() - suffix.size());
+}
+
+/*-------------------------------------------------------------------------------------------------------------------*/
+
+void File::toLower(string& s)
+{
+	for(int i=0; i < s.size(); i++)
+	{
+        s[i] = tolower(s[i]);
+    }
+}
+
+/*-------------------------------------------------------------------------------------------------------------------*/
+
 void File::determineFileType() {
 	this->type = FILE_TYPE_UNKNOWN;
 
-    if (this->name.size() > 5) {
-    	int i;
-    	int typeLen;
-    	int strLen;
-    	char ending[5] = {0,0,0,0,0};
-    	char* e = (char*)name.c_str();
+	string s = name;
+	toLower(s);
 
-    	strLen = strlen(e);
-
-    	if (e[strLen-4] == '.') {
-    		typeLen = 4;
-    	} else if (e[strLen-5] == '.') {
-    		typeLen = 5;
-    	} else {
-    		return;
-    	}
-
-    	e += strlen(e)-typeLen;
-    	for(i=0; i<typeLen; i++) {
-    		ending[i] = tolower(*e);
-    		e++;
-    	}
-    	ending[typeLen] = 0;
-
-    	if (memcmp(ending, ".jpg", sizeof(ending)) == 0) {
-    		type = FILE_TYPE_JPG;
-    	} else if (memcmp(ending, ".gif", sizeof(ending)) == 0) {
-    		type = FILE_TYPE_GIF;
-    	} else if (memcmp(ending, ".png", sizeof(ending)) == 0) {
-    		type = FILE_TYPE_PNG;
-    	} else if (memcmp(ending, ".heic", sizeof(ending)) == 0) {
-    		type = FILE_TYPE_HEIC;
-    	} else if (memcmp(ending, ".tif", sizeof(ending)) == 0) {
-    		type = FILE_TYPE_TIF;
-    	} else if (memcmp(ending, ".mts", sizeof(ending)) == 0) {
-    	    type = FILE_TYPE_MTS;
-    	} else if (memcmp(ending, ".mpg", sizeof(ending)) == 0) {
-    	    type = FILE_TYPE_MPG;
-    	} else if (memcmp(ending, ".mkv", sizeof(ending)) == 0) {
-    		type = FILE_TYPE_MKV;
-    	} else if (memcmp(ending, ".avi", sizeof(ending)) == 0) {
-    		type = FILE_TYPE_AVI;
-    	} else if (memcmp(ending, ".mp4", sizeof(ending)) == 0) {
-    		type = FILE_TYPE_MP4;
-    	} else if (memcmp(ending, ".wmv", sizeof(ending)) == 0) {
-    		type = FILE_TYPE_WMV;
-    	} else if (memcmp(ending, ".webm", sizeof(ending)) == 0) {
-    		type = FILE_TYPE_WEBM;
-    	} else if (memcmp(ending, ".hash", sizeof(ending)) == 0) {
-    		type = FILE_TYPE_HASH;
-    	}
-    }
+	if (endsWith(s, ".jpg")) {
+		type = FILE_TYPE_JPG;
+	}
+	else if (endsWith(s, ".gif")) {
+		type = FILE_TYPE_GIF;
+	}
+	else if (endsWith(s, ".png")) {
+		type = FILE_TYPE_PNG;
+	}
+	else if (endsWith(s, ".heic")) {
+		type = FILE_TYPE_HEIC;
+	}
+	else if (endsWith(s, ".tif")) {
+		type = FILE_TYPE_TIF;
+	}
+	else if (endsWith(s, ".mts")) {
+		type = FILE_TYPE_MTS;
+	}
+	else if (endsWith(s, ".mpg")) {
+		type = FILE_TYPE_MPG;
+	}
+	else if (endsWith(s, ".mkv")) {
+		type = FILE_TYPE_MKV;
+	}
+	else if (endsWith(s, ".avi")) {
+		type = FILE_TYPE_AVI;
+	}
+	else if (endsWith(s, ".mp4")) {
+		type = FILE_TYPE_MP4;
+	}
+	else if (endsWith(s, ".wmv")) {
+		type = FILE_TYPE_WMV;
+	}
+	else if (endsWith(s, ".webm")) {
+		type = FILE_TYPE_WEBM;
+	}
+	else if (endsWith(s, ".mid")) {
+		type = FILE_TYPE_MID;
+	}
+	else if (endsWith(s, ".hash")) {
+		type = FILE_TYPE_HASH;
+	}
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/
@@ -491,6 +501,12 @@ bool File::typeIsVideo() {
 			type == FILE_TYPE_MKV || type == FILE_TYPE_AVI ||
 	        type == FILE_TYPE_MP4 || type == FILE_TYPE_WMV ||
 	        type == FILE_TYPE_WEBM);
+}
+
+/*-------------------------------------------------------------------------------------------------------------------*/
+
+bool File::typeIsAudio() {
+	return (type == FILE_TYPE_MID);
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/

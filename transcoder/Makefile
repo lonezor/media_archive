@@ -17,6 +17,7 @@ HDR=	general.h \
 	Task.h \
 	GenerateSrcFileHashTask.h \
 	GenerateImageTask.h \
+	GenerateAudioTask.h \
 	GenerateVideoTask.h \
 	ReadImageMetaDataTask.h \
 	ReadVideoMetaDataTask.h \
@@ -39,6 +40,7 @@ OBJ=	main.o \
 	Task.o \
 	GenerateSrcFileHashTask.o \
 	GenerateImageTask.o \
+	GenerateAudioTask.o \
 	GenerateVideoTask.o \
 	ReadImageMetaDataTask.o \
 	ReadVideoMetaDataTask.o \

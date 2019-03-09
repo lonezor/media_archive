@@ -15,11 +15,15 @@ public:
 
 	enum FileType {
 		FILE_TYPE_UNKNOWN = 0,
+
+		/* Image Formats */
 		FILE_TYPE_JPG     = 1,
 		FILE_TYPE_GIF     = 2,
 		FILE_TYPE_PNG     = 3,
 		FILE_TYPE_HEIC    = 4,
 		FILE_TYPE_TIF     = 5,
+
+		/* Video Formats */
 		FILE_TYPE_MTS     = 6,
 		FILE_TYPE_MPG     = 7,
 		FILE_TYPE_MKV     = 8,
@@ -28,6 +32,9 @@ public:
 		FILE_TYPE_WMV     = 11,
 		FILE_TYPE_WEBM    = 12,
 		FILE_TYPE_HASH    = 13,
+
+		/* Audio Formats */
+		FILE_TYPE_MID     = 14,
 	};
 
 	File(string dirPath, string name);
@@ -73,7 +80,11 @@ public:
 	bool typeIsImage();
 	bool typeIsAnimation();
 	bool typeIsVideo();
+	bool typeIsAudio();
 	bool typeIsHash();
+
+	bool endsWith(const string& s, const string& suffix);
+	void toLower(string& s);
 };
 
 

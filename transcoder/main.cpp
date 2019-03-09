@@ -2,6 +2,7 @@
 #include "general.h"
 #include "GenerateSrcFileHashTask.h"
 #include "GenerateImageTask.h"
+#include "GenerateAudioTask.h"
 #include "GenerateVideoTask.h"
 #include "ReadImageMetaDataTask.h"
 #include "ReadVideoMetaDataTask.h"
@@ -96,7 +97,7 @@ void parseArguments(int argc, char* argv[]) {
 /*-------------------------------------------------------------------------------------------------------------------*/
 
 void fsFileEventCb(FileSystem::FileSystemEvent event, uint32_t timestamp, File* file, Directory* affectedDirectory, void* userData) {
-	if (file->typeIsImage() || file->typeIsAnimation() || file->typeIsVideo()) {
+	if (file->typeIsImage() || file->typeIsAnimation() || file->typeIsVideo() || file->typeIsAudio()) {
 		string path = file->getPath();
 
 		struct tm* timeInfo;
@@ -311,6 +312,8 @@ int fileProcessingMode()
 		delete generateSrcFileHashTask;
 	}
 
+	printf("file type %d\n", file->type);
+
 	// HEIC file must be converted to JPG
 	if (file->type == File::FILE_TYPE_HEIC) {
 		printf("Converting HEIC file to JPG...\n");
@@ -436,6 +439,12 @@ int fileProcessingMode()
 		GenerateVideoTask* generateVideoTask = new GenerateVideoTask(file, string(outputDir));
 		generateVideoTask->execute();
 		delete generateVideoTask;
+	}
+
+	else if (file->typeIsAudio()) {
+		GenerateAudioTask* generateAudioTask = new GenerateAudioTask(file, string(outputDir));
+		generateAudioTask->execute();
+		delete generateAudioTask;
 	}
 
 	// Move original file, if applicable

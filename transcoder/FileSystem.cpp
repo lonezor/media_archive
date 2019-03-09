@@ -75,7 +75,7 @@ void FileSystem::scan(Directory* dir) {
 		if (type == DT_REG) {
 			File* file = new File(dirPath, fileName);
 			file->analyze();
-			//file->print();
+			file->print();
 
 			//dir->fileList.push_back(file);
 
