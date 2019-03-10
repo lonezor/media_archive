@@ -100,6 +100,18 @@ void File::determineFileType() {
 	else if (endsWith(s, ".mid")) {
 		type = FILE_TYPE_MID;
 	}
+	else if (endsWith(s, ".mp2")) {
+		type = FILE_TYPE_MP2;
+	}
+	else if (endsWith(s, ".mp3")) {
+		type = FILE_TYPE_MP3;
+	}
+	else if (endsWith(s, ".wav")) {
+		type = FILE_TYPE_WAV;
+	}
+	else if (endsWith(s, ".mod")) {
+		type = FILE_TYPE_MOD;
+	}	
 	else if (endsWith(s, ".hash")) {
 		type = FILE_TYPE_HASH;
 	}
@@ -506,7 +518,9 @@ bool File::typeIsVideo() {
 /*-------------------------------------------------------------------------------------------------------------------*/
 
 bool File::typeIsAudio() {
-	return (type == FILE_TYPE_MID);
+	return (type == FILE_TYPE_MID  || type == FILE_TYPE_MP2 ||
+		    type == FILE_TYPE_MP3  || type == FILE_TYPE_WAV ||
+		    type == FILE_TYPE_FLAC || type == FILE_TYPE_MOD);
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/

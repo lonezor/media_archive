@@ -35,6 +35,11 @@ public:
 
 		/* Audio Formats */
 		FILE_TYPE_MID     = 14,
+		FILE_TYPE_MP2     = 15,
+		FILE_TYPE_MP3     = 16,
+		FILE_TYPE_FLAC    = 17,
+		FILE_TYPE_WAV     = 18,
+		FILE_TYPE_MOD     = 19,
 	};
 
 	File(string dirPath, string name);
