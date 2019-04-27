@@ -40,7 +40,7 @@ public:
 	void registerDirectoryEventCallback(fsDirectoryEventCb_t* cb, void* userData);
 	void fsEventDataAvailable(struct inotify_event* event);
 	void tick(void);
-	bool fileExists(string path);
+	static bool fileExists(string path);
 
 	list<Directory*>                   dirList;
 	std::map<int,Directory*>           dirWatchMap;    /* key: watch descriptor */

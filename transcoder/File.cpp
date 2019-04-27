@@ -111,9 +111,47 @@ void File::determineFileType() {
 	}
 	else if (endsWith(s, ".mod")) {
 		type = FILE_TYPE_MOD;
-	}	
+	}
+	else if (endsWith(s, ".sid")) {
+		type = FILE_TYPE_SID;
+	}
 	else if (endsWith(s, ".hash")) {
 		type = FILE_TYPE_HASH;
+	}
+}
+
+/*-------------------------------------------------------------------------------------------------------------------*/
+
+string File::fileTypeSuffix()
+{
+	switch (type)
+	{
+		/* Image Formats */
+		case FILE_TYPE_JPG: return ".jpg";
+		case FILE_TYPE_GIF: return ".gif";
+		case FILE_TYPE_PNG: return ".png";
+		case FILE_TYPE_HEIC: return ".heic";
+		case FILE_TYPE_TIF: return ".tif";
+
+		/* Video Formats */
+		case FILE_TYPE_MTS: return ".mts";
+		case FILE_TYPE_MPG: return ".mpg";
+		case FILE_TYPE_MKV: return ".mkv";
+		case FILE_TYPE_AVI: return ".avi";
+		case FILE_TYPE_MP4: return ".mp4";
+		case FILE_TYPE_WMV: return ".wmv";
+		case FILE_TYPE_WEBM: return ".webm";
+
+		/* Audio Formats */
+		case FILE_TYPE_MID: return ".mid";
+		case FILE_TYPE_MP2: return ".mp2";
+		case FILE_TYPE_MP3: return ".mp3";
+		case FILE_TYPE_FLAC: return ".flac";
+		case FILE_TYPE_WAV: return ".wav";
+		case FILE_TYPE_MOD: return ".mod";
+		case FILE_TYPE_SID: return ".sid";
+		default:
+			return "";
 	}
 }
 
@@ -301,11 +339,14 @@ string File::getMetaData(string key) {
 	}
 }
 
-void File::writeInfoFile(string path) {
+/*-------------------------------------------------------------------------------------------------------------------*/
+
+void File::writeInfoFile_visual(string path) {
 	map<string, string>::iterator it;
 	string out = "";
 
-	//out += string("SourceFormat " + ); // TODO
+	out += string("InputSuffix " + fileTypeSuffix() + string("\n"));
+	out += string("OutputSuffixes " + outputSuffixes + string("\n"));
 
 	if (letterboxed) {
 		out += string("Orientation Portrait\n");
@@ -408,6 +449,72 @@ void File::writeInfoFile(string path) {
 
 	fprintf(fileStream, "%s", out.c_str());
 	fclose(fileStream);
+}
+
+/*-------------------------------------------------------------------------------------------------------------------*/
+
+void File::writeInfoFile_audio(string path) {
+	map<string, string>::iterator it;
+	string out = "";
+
+	out += string("InputSuffix " + fileTypeSuffix() + string("\n"));
+	out += string("OutputSuffixes " + outputSuffixes + string("\n"));
+
+	out += string("Size ") + to_string(size) + string("\n");
+
+	time_t ts = (time_t)fsModifiedTs;
+
+	out += string("Time.Epoch ") + to_string(fsModifiedTs) + string("\n");	
+
+	struct tm * tInfo;
+	char tStr[200];
+	tInfo = localtime(&ts);
+
+	strftime(tStr, sizeof(tStr), "%Y-%m-%d", tInfo);
+	out += string("Time.Date ") + string(tStr) + string("\n");
+
+	strftime(tStr, sizeof(tStr), "%Y", tInfo);
+	out += string("Time.Year ") + string(tStr) + string("\n");
+
+	strftime(tStr, sizeof(tStr), "%B", tInfo);
+	out += string("Time.Month ") + string(tStr) + string("\n");
+
+	strftime(tStr, sizeof(tStr), "%d", tInfo);
+	out += string("Time.Day ") + string(tStr) + string("\n");
+
+	strftime(tStr, sizeof(tStr), "%A", tInfo);
+	out += string("Time.Weekday ") + string(tStr) + string("\n");
+
+	strftime(tStr, sizeof(tStr), "%H", tInfo);
+	out += string("Time.Hour ") + string(tStr) + string("\n");
+
+	strftime(tStr, sizeof(tStr), "%M", tInfo);
+	out += string("Time.Minute ") + string(tStr) + string("\n");
+
+	strftime(tStr, sizeof(tStr), "%S", tInfo);
+	out += string("Time.Second ") + string(tStr) + string("\n");
+
+	FILE* fileStream = fopen(path.c_str(), "w");
+	if (!fileStream) {
+		printf("error, could not open %s\n", path.c_str());
+		return;
+	}
+
+	fprintf(fileStream, "%s", out.c_str());
+	fclose(fileStream);
+}
+
+/*-------------------------------------------------------------------------------------------------------------------*/
+
+void File::writeInfoFile(string path) {
+
+	if (typeIsImage() || typeIsAnimation() || typeIsVideo()) {
+		writeInfoFile_visual(path);
+	}
+	else if (typeIsAudio())
+	{
+		writeInfoFile_audio(path);
+	}
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/
@@ -520,7 +627,8 @@ bool File::typeIsVideo() {
 bool File::typeIsAudio() {
 	return (type == FILE_TYPE_MID  || type == FILE_TYPE_MP2 ||
 		    type == FILE_TYPE_MP3  || type == FILE_TYPE_WAV ||
-		    type == FILE_TYPE_FLAC || type == FILE_TYPE_MOD);
+		    type == FILE_TYPE_FLAC || type == FILE_TYPE_MOD || 
+		    type == FILE_TYPE_SID);
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/
@@ -548,6 +656,44 @@ uint32_t File::getHeight()
 uint32_t File::getDuration()
 {
 	return duration;
+}
+
+/*-------------------------------------------------------------------------------------------------------------------*/
+
+string File::createTmpDir()
+{
+	char tmpDir[1024];
+	snprintf(tmpDir, sizeof(tmpDir), "/tmp/%s", getHashString().c_str());
+
+	char cmd[1024];
+	snprintf(cmd, sizeof(cmd), "mkdir -p %s", tmpDir);
+	printf("cmd: '%s'\n", cmd);
+	system(cmd);
+
+	return string(tmpDir);
+}
+
+/*-------------------------------------------------------------------------------------------------------------------*/
+
+void File::deleteTmpDir()
+{
+char tmpDir[1024];
+	snprintf(tmpDir, sizeof(tmpDir), "/tmp/%s", getHashString().c_str());
+
+	char cmd[1024];
+	snprintf(cmd, sizeof(cmd), "rm -rf %s", tmpDir);
+	printf("cmd: '%s'\n", cmd);
+	system(cmd);
+}
+
+/*-------------------------------------------------------------------------------------------------------------------*/
+
+void File::appendOutputSuffixes(string suffix)
+{
+	if (outputSuffixes.length() != 0) {
+		outputSuffixes += ",";
+	}
+	outputSuffixes += suffix;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/

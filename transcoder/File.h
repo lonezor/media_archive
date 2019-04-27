@@ -40,6 +40,7 @@ public:
 		FILE_TYPE_FLAC    = 17,
 		FILE_TYPE_WAV     = 18,
 		FILE_TYPE_MOD     = 19,
+		FILE_TYPE_SID     = 20,
 	};
 
 	File(string dirPath, string name);
@@ -62,6 +63,8 @@ public:
 	uint32_t                width;
 	uint32_t                height;
 	float                   duration;
+	string                  intputSuffix;
+	string                  outputSuffixes; // Comma separated string of file name extensions after sha1
 
 	void   analyze();
 	string getPath();
@@ -73,14 +76,21 @@ public:
 	string getMetaData(string key);
 	string getHashString(void);
 
+	void appendOutputSuffixes(string suffix);
+
 	uint32_t getWidth();
 	uint32_t getHeight();
 	uint32_t getDuration();
 
+	string fileTypeSuffix();
 	void determineFileType();
 	void calculateCheckSum();
 	void writeChecksumFile();
 	void writeInfoFile(string path);
+	void writeInfoFile_visual(string path);
+	void writeInfoFile_audio(string path);
+	string createTmpDir();
+	void deleteTmpDir();
 
 	bool typeIsImage();
 	bool typeIsAnimation();
