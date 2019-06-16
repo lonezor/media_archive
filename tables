@@ -39,3 +39,11 @@ storage: Storage in local file system or using remote cloud storage
  path     - varchar(2048): '/var/objects' or '/objectBucket'
 
 That's all. With SQL queries on above much can be achieved.
+
+
+
+example:
+
+tags (avp)
+
+

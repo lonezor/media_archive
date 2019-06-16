@@ -63,7 +63,6 @@ public:
 	uint32_t                width;
 	uint32_t                height;
 	float                   duration;
-	string                  intputSuffix;
 	string                  outputSuffixes; // Comma separated string of file name extensions after sha1
 
 	void   analyze();

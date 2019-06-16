@@ -103,6 +103,8 @@ void GenerateVideoTask::execute() {
 		ShellCmd::execute(cmd);
 	}
 
+	file->appendOutputSuffixes(".mp4");
+
 	// Move original file
 	FileSystem::moveFile(file->getPath(), targetDirName + "/" + file->getHashString());
 

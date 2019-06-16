@@ -211,6 +211,7 @@ string File::getPath() {
 /*-------------------------------------------------------------------------------------------------------------------*/
 
 void File::populateSupportedMetaDataKeyMap() {
+	supportedMetaDataKeyMap["Audio"]                           = "Media Info";
 	supportedMetaDataKeyMap["Image"]                           = "Media Info";
 	supportedMetaDataKeyMap["Image.Width"]                     = "Media Info";
 	supportedMetaDataKeyMap["Image.Height"]                    = "Media Info";
@@ -345,7 +346,6 @@ void File::writeInfoFile_visual(string path) {
 	map<string, string>::iterator it;
 	string out = "";
 
-	out += string("InputSuffix " + fileTypeSuffix() + string("\n"));
 	out += string("OutputSuffixes " + outputSuffixes + string("\n"));
 
 	if (letterboxed) {
@@ -457,7 +457,8 @@ void File::writeInfoFile_audio(string path) {
 	map<string, string>::iterator it;
 	string out = "";
 
-	out += string("InputSuffix " + fileTypeSuffix() + string("\n"));
+	out += string("Audio\n");
+
 	out += string("OutputSuffixes " + outputSuffixes + string("\n"));
 
 	out += string("Size ") + to_string(size) + string("\n");

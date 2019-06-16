@@ -1117,6 +1117,7 @@ string GenerateImageTask::getImageFileName(File* file, ImageSize size, ThumbNail
 	string sizeSuffix    = "";
 	string qualitySuffix = "";
 	string fileType      = "";
+	string suffix        = "";
 
 	fileName = file->getHashString();
 
@@ -1128,7 +1129,9 @@ string GenerateImageTask::getImageFileName(File* file, ImageSize size, ThumbNail
 		qualitySuffix = "";
 	}
 
-	fileName += sizeSuffix + qualitySuffix + fileType;
+	suffix = sizeSuffix + qualitySuffix + fileType;
+	fileName += suffix;
+	file->appendOutputSuffixes(suffix);
 
 	return fileName;
 }
