@@ -115,41 +115,42 @@ void add_tag(uint32_t obj_id, uint32_t avp_id)
 
 }
 
-
-
-
 int main(int argc, char* argv[])
 {
     if (argc < 2) {
         printf("Please specify <path to .info>\n");
     }
 
-    char path[1024];
-    snprintf(path, sizeof(path), "%s", argv[1]);
-    char* baseName = basename(path);
-    char* pos = strstr(path, ".info");
-
-    if (!pos) {
-        printf("No info file given!\n");
-        return 0;
-    }
-    *pos = 0;
-
     connect_database();
 
-    const char* sha1 = baseName;
-    const char* infoPath = argv[1];
+    int i;
+    for(i=1; i < argc; i++) {
+        char path[1024];
+        snprintf(path, sizeof(path), "%s", argv[i]);
+        char* baseName = basename(path);
+        char* pos = strstr(path, ".info");
 
-    printf("reading %s\n", infoPath);
+        if (!pos) {
+            printf("No info file given!\n");
+            continue;
+        }
+        *pos = 0;
 
-    char line[2048];
-    char suffexes[1024];
-    FILE* infoFile = fopen(infoPath, "r");
-    uint32_t obj_id = 0;
+    
 
-    obj_id = add_object(sha1);
+        const char* sha1 = baseName;
+        const char* infoPath = argv[i];
 
-    if (infoFile) {
+        printf("reading %s (sha1 %s)\n", infoPath, sha1);
+
+        char line[2048];
+        char suffexes[1024];
+        FILE* infoFile = fopen(infoPath, "r");
+        uint32_t obj_id = 0;
+
+        obj_id = add_object(sha1);
+
+        if (infoFile) {
         while (fgets(line, sizeof(line), infoFile)) {
             int len = strlen(line);
             line[len-1] = 0;
@@ -160,8 +161,9 @@ int main(int argc, char* argv[])
 
             uint32_t avp_id = add_avp(attribute, value);
             add_tag(obj_id, avp_id);
-       }
-       fclose(infoFile);
+        }
+        fclose(infoFile);
+        }
     }
 
     return 0;
