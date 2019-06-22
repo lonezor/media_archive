@@ -57,6 +57,7 @@ public:
 	uint32_t                completelyProcessedImagesTs;
 	uint32_t                completelyProcessedVideosTs;
 	std::map<string,string> imageMetaDataMap;
+	std::map<string,string> audioMetaDataMap;
 	std::map<string,string> supportedMetaDataKeyMap;
 	bool                    imageRotationRequired;
 	bool                    letterboxed;
@@ -74,6 +75,7 @@ public:
 	void   addMetaData(string key, string value);
 	string getMetaData(string key);
 	string getHashString(void);
+	string getSrcFileInfo(void);
 
 	void appendOutputSuffixes(string suffix);
 

@@ -39,9 +39,11 @@ exif.Model
 exif.GPSLatitude
 ..
 
-artist.name
-artist.album
-artist.year
+artist
+album
+genre
+track
+title
 
 william
 william.babyMonth (1-12)

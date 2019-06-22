@@ -10,6 +10,7 @@
 #include <sys/types.h>
 
 #include "GenerateSrcFileHashTask.h"
+#include "ShellCmd.h"
 
 using namespace std;
 
@@ -211,7 +212,12 @@ string File::getPath() {
 /*-------------------------------------------------------------------------------------------------------------------*/
 
 void File::populateSupportedMetaDataKeyMap() {
-	supportedMetaDataKeyMap["Audio"]                           = "Media Info";
+	supportedMetaDataKeyMap["Artist"]                          = "Media Info";
+	supportedMetaDataKeyMap["Album"]                           = "Media Info";
+	supportedMetaDataKeyMap["Genre"]                           = "Media Info";
+	supportedMetaDataKeyMap["Track"]                           = "Media Info";
+	supportedMetaDataKeyMap["Title"]                           = "Media Info";
+	supportedMetaDataKeyMap["Audio"]                           = "Media Info";                           
 	supportedMetaDataKeyMap["Image"]                           = "Media Info";
 	supportedMetaDataKeyMap["Image.Width"]                     = "Media Info";
 	supportedMetaDataKeyMap["Image.Height"]                    = "Media Info";
@@ -323,8 +329,13 @@ void File::populateSupportedMetaDataKeyMap() {
 
 void File::addMetaData(string key, string value) {
 	if (supportedMetaDataKeyMap.count(key) != 0) {
-		printf("adding MetaData key '%s' with value '%s'\n", key.c_str(), value.c_str());
-		imageMetaDataMap[key] = value;
+		if (typeIsAudio()) {
+			printf("adding audio MetaData key '%s' with value '%s'\n", key.c_str(), value.c_str());
+			audioMetaDataMap[key] = value;
+		} else {
+			printf("adding image MetaData key '%s' with value '%s'\n", key.c_str(), value.c_str());
+			imageMetaDataMap[key] = value;
+		}
 	} else {
 		printf("skipping MetaData key '%s' with value '%s'\n", key.c_str(), value.c_str());
 	}
@@ -333,14 +344,27 @@ void File::addMetaData(string key, string value) {
 /*-------------------------------------------------------------------------------------------------------------------*/
 
 string File::getMetaData(string key) {
-	if (imageMetaDataMap.count(key) != 0) {
-		return imageMetaDataMap[key];
+	if (typeIsAudio()) {
+		if (audioMetaDataMap.count(key) != 0) {
+			return audioMetaDataMap[key];
+		} else {
+			return "";
+		}
 	} else {
-		return "";
+		if (imageMetaDataMap.count(key) != 0) {
+			return imageMetaDataMap[key];
+		} else {
+			return "";
+		}
 	}
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/
+
+string File::getSrcFileInfo()
+{
+	return ShellCmd::execute("file -b \"" + getPath() + "\"");
+}
 
 void File::writeInfoFile_visual(string path) {
 	map<string, string>::iterator it;
@@ -494,6 +518,11 @@ void File::writeInfoFile_audio(string path) {
 
 	strftime(tStr, sizeof(tStr), "%S", tInfo);
 	out += string("Time.Second ") + string(tStr) + string("\n");
+
+	for (it = audioMetaDataMap.begin(); it != audioMetaDataMap.end(); it++)
+	{
+    	out +=  it->first + string(" ") + it->second + string("\n");
+	}
 
 	FILE* fileStream = fopen(path.c_str(), "w");
 	if (!fileStream) {

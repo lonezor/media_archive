@@ -21,6 +21,7 @@ HDR=	general.h \
 	GenerateVideoTask.h \
 	ReadImageMetaDataTask.h \
 	ReadVideoMetaDataTask.h \
+        ReadAudioMetaDataTask.h \
 	SyncWithFsTask.h \
 	PngReader.h \
 	PngWriter.h
@@ -44,6 +45,7 @@ OBJ=	main.o \
 	GenerateVideoTask.o \
 	ReadImageMetaDataTask.o \
 	ReadVideoMetaDataTask.o \
+        ReadAudioMetaDataTask.o \
 	SyncWithFsTask.o \
 	PngReader.o \
 	PngWriter.o

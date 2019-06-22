@@ -6,6 +6,7 @@
 #include "GenerateVideoTask.h"
 #include "ReadImageMetaDataTask.h"
 #include "ReadVideoMetaDataTask.h"
+#include "ReadAudioMetaDataTask.h"
 #include "SyncWithFsTask.h"
 #include "ShellCmd.h"
 #include "Common.h"
@@ -442,6 +443,10 @@ int fileProcessingMode()
 	}
 
 	else if (file->typeIsAudio()) {
+		ReadAudioMetaDataTask* readAudioMetaDataTask = new ReadAudioMetaDataTask(file);
+		readAudioMetaDataTask->execute();
+		delete readAudioMetaDataTask;
+
 		GenerateAudioTask* generateAudioTask = new GenerateAudioTask(file, string(outputDir));
 		generateAudioTask->execute();
 		delete generateAudioTask;
