@@ -46,6 +46,7 @@ def main():
                 sql = 'CREATE TABLE object ('
                 sql += 'obj_id INT UNSIGNED NOT NULL AUTO_INCREMENT,'
                 sql += 'sha1 VARCHAR(64) NOT NULL,'
+                sql += 'access_counter INT UNSIGNED NOT NULL,'
                 sql += 'PRIMARY KEY (obj_id),'
                 sql += 'UNIQUE KEY unique_key_constraint (sha1)'
                 sql += ');'
