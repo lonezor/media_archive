@@ -37,9 +37,6 @@ static char* opt_object = NULL;
 static char* opt_attribute = NULL;
 static char* opt_value = NULL;
 
-static void store_tag(uint32_t obj_id, uint32_t avp_id);
-uint32_t store_avp(char* attribute, char* value);
-
 #define NO_ID (0xffffffff)
 
  static struct option long_options[] =
@@ -110,7 +107,7 @@ void connect_database()
 uint32_t find_object(const char* sha1) {
     char sql[1024];
 
-    snprintf(sql, sizeof(sql), "SELECT obj_id FROM object WHERE sha1=\"%s\";", sha1 ? sha1 : "");
+    snprintf(sql, sizeof(sql), "SELECT id FROM object WHERE sha1=\"%s\";", sha1 ? sha1 : "");
     printf("%s\n", sql);
 
     uint32_t obj_id = get_table_id(sql);
@@ -118,7 +115,38 @@ uint32_t find_object(const char* sha1) {
     return obj_id;
 }
 
-uint32_t add_object(const char* sha1)
+
+uint32_t find_suffix(const char* suffix) {
+    char sql[1024];
+
+    snprintf(sql, sizeof(sql), "SELECT id FROM suffix WHERE suffix=\"%s\";", suffix ? suffix : "");
+    printf("%s\n", sql);
+
+    uint32_t suffix_id = get_table_id(sql);
+
+    return suffix_id;
+}
+
+uint32_t add_suffix(const char* suffix) {
+    char sql[1024];
+
+    uint32_t suffix_id = NO_ID;
+
+    if (!suffix || !strlen(suffix)) {
+        return suffix_id;
+    }
+
+    // Object table
+    snprintf(sql, sizeof(sql),
+             "INSERT INTO suffix (suffix) VALUES (\"%s\");",
+             suffix ? suffix : "");
+    printf("%s\n", sql);
+    mysql_query(&mysql, sql);
+
+    return find_suffix(suffix);
+}
+
+uint32_t add_object(const char* sha1, uint32_t suffix_id)
 {
 char sql[1024];
 
@@ -126,8 +154,8 @@ char sql[1024];
 
     // Object table
     snprintf(sql, sizeof(sql),
-             "INSERT INTO object (sha1,access_counter) VALUES (\"%s\", 0);",
-             sha1 ? sha1 : "");
+             "INSERT INTO object (sha1,access_counter,suffix_id) VALUES (\"%s\", 0, %u);",
+             sha1 ? sha1 : "", suffix_id);
     printf("%s\n", sql);
     mysql_query(&mysql, sql);
 
@@ -140,7 +168,7 @@ uint32_t find_avp(const char* attribute, const char* value)
 
     uint32_t avp_id = NO_ID;  
 
-        snprintf(sql, sizeof(sql), "SELECT avp_id FROM avp WHERE attribute = \"%s\" AND value = \"%s\";", 
+        snprintf(sql, sizeof(sql), "SELECT id FROM avp WHERE attribute = \"%s\" AND value = \"%s\";", 
         attribute ? attribute : "", value ? value : "");
     printf("%s\n", sql);
 
@@ -159,7 +187,7 @@ uint32_t find_tag(const char* sha1, const char* attribute, const char* value)
 
     uint32_t avp_id = find_avp(attribute, value);
 
-    snprintf(sql, sizeof(sql), "SELECT tag_id FROM tag WHERE obj_id = \"%u\" AND avp_id = \"%u\";", 
+    snprintf(sql, sizeof(sql), "SELECT id FROM tag WHERE obj_id = \"%u\" AND avp_id = \"%u\";", 
         object_id, avp_id);
     printf("%s\n", sql);
 
@@ -177,20 +205,43 @@ void remove_tag(uint32_t tag_id)
    mysql_query(&mysql, sql);
 }
 
+bool only_whitespace(const char* value) {
+    if (!value) {
+        return false;
+    }
+
+    bool only_whitespace = true;
+
+    int i;
+    for(i=0; i < strlen(value); i++) {
+        if (value[i] != ' ' && value[i] != '\t') {
+            only_whitespace = false;
+            break;
+        }
+    }
+
+    return only_whitespace;
+}
+
 uint32_t add_avp(const char* attribute, const char* value)
 {
     char sql[1024];
 
     uint32_t avp_id = NO_ID;
 
+    const char* v = value;
+    if (only_whitespace(v)) {
+        v = "";
+    }
+
     // AVP table
     snprintf(sql, sizeof(sql),
              "INSERT INTO avp (attribute, value) VALUES (\"%s\",\"%s\");",
-             attribute ? attribute : "", value ? value : "");
+             attribute ? attribute : "", v ? v : "");
    mysql_query(&mysql, sql);
    printf("%s\n", sql);
 
-   return find_avp(attribute, value);
+   return find_avp(attribute, v);
 }
 
 void add_tag(uint32_t obj_id, uint32_t avp_id)
@@ -202,25 +253,6 @@ void add_tag(uint32_t obj_id, uint32_t avp_id)
     printf("%s\n", sql);
     mysql_query(&mysql, sql);
 
-}
-
-uint32_t store_avp(char* attribute, char* value) {
-    uint32_t avp_id;
-
-    // To allow query of available attributes, store AVP with empty value
-    if (value) {
-        (void)add_avp(attribute, "");
-    }
-
-    // Store requested AVP
-    avp_id = add_avp(attribute, value);
-
-    return avp_id;
-}
-
-static void store_tag(uint32_t obj_id, uint32_t avp_id)
-{
-    add_tag(obj_id, avp_id);
 }
 
 void print_help()
@@ -236,6 +268,21 @@ void print_help()
     printf("    --remove-tag         Remove tag based on given object and AVP. Only tag affected (not AVP itself)\n");
     printf("    --log-level=INTEGER  Log level\n");
     printf(" -h --help               This screen\n");    
+}
+
+void extract_avp(char* tokStr, int tokStrSize, char* line, int len, char** attr, char** val)
+{
+    snprintf(tokStr, tokStrSize, "%s", line);
+
+    char* rest = tokStr; 
+    char* attribute = strtok_r(rest, " ", &rest);
+    char* value = NULL;
+    if (attribute) {
+        value = line + strlen(attribute) + 1;
+    }
+
+    *attr = attribute;
+    *val = value;
 }
 
 int main(int argc, char* argv[])
@@ -295,10 +342,10 @@ int main(int argc, char* argv[])
         }
 
         // Ensure AVP is stored
-        uint32_t avp_id = store_avp(opt_attribute, opt_value);
+        uint32_t avp_id = add_avp(opt_attribute, opt_value);
 
         // Add tag or no action if already present
-        store_tag(object_id, avp_id);
+        add_tag(object_id, avp_id);
 
         return 0;
     }
@@ -346,34 +393,51 @@ int main(int argc, char* argv[])
 
         printf("Processing %s...\n", infoPath);
 
-        char line[2048];
+        char line[2048] = {0};
         char suffexes[1024];
+        char tokStr[2048];
         FILE* infoFile = fopen(infoPath, "r");
-        uint32_t obj_id = 0;
+        if (!infoFile) {
+            printf("Error: Failed to open file '%s'\n", infoPath);
+            continue;
+        }
+        uint32_t obj_id;
+        uint32_t suffix_id;
 
-        obj_id = add_object(sha1);
+        int len;
+        char* attribute = NULL;
+        char* value = NULL;
 
-        if (infoFile) {
+        // Expect 'ObjectSuffixes
+        fgets(line, sizeof(line), infoFile);
+        if (!strstr(line, "ObjectSuffixes")) {
+            printf("Error: First line of .info file '%s' does not contain 'ObjectSuffixes'\n", infoPath);
+            fclose(infoFile);
+            return 1;
+        }
+
+        len = strlen(line);
+        line[len-1] = 0;
+
+        extract_avp(tokStr, sizeof(tokStr), line, len, &attribute, &value);
+
+        suffix_id = add_suffix(value);
+
+        obj_id = add_object(sha1, suffix_id);
+
+        // Manage the rest as regular AVPs
         while (fgets(line, sizeof(line), infoFile)) {
-            int len = strlen(line);
+            len = strlen(line);
             line[len-1] = 0;
 
-            char tokStr[2048];
-            snprintf(tokStr, sizeof(tokStr), "%s", line);
+            attribute = NULL;
+            value = NULL;
+            extract_avp(tokStr, sizeof(tokStr), line, len, &attribute, &value);
 
-            char* rest = tokStr; 
-            char* attribute = strtok_r(rest, " ", &rest);
-            char* value = NULL;
-            if (attribute) {
-                printf("line len %d attribute len %d\n", len-1, (int)strlen(attribute));
-                value = line + strlen(attribute) + 1;
-            }
-
-            uint32_t avp_id = store_avp(attribute, value);
-            store_tag(obj_id, avp_id);
+            uint32_t avp_id = add_avp(attribute, value);
+            add_tag(obj_id, avp_id);
         }
         fclose(infoFile);
-        }
     }
 
     return 0;

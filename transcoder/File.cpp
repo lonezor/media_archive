@@ -370,7 +370,9 @@ void File::writeInfoFile_visual(string path) {
 	map<string, string>::iterator it;
 	string out = "";
 
-	out += string("OutputSuffixes " + outputSuffixes + string("\n"));
+	// Due to parsing efficiency, this attribute must come first
+	// It is used when defining an object
+	out += string("ObjectSuffixes " + outputSuffixes + string("\n"));
 
 	if (letterboxed) {
 		out += string("Orientation Portrait\n");
@@ -481,9 +483,11 @@ void File::writeInfoFile_audio(string path) {
 	map<string, string>::iterator it;
 	string out = "";
 
-	out += string("Audio\n");
+	// Due to parsing efficiency, this attribute must come first
+	// It is used when defining an object
+	out += string("ObjectSuffixes " + outputSuffixes + string("\n"));
 
-	out += string("OutputSuffixes " + outputSuffixes + string("\n"));
+	out += string("Audio\n");
 
 	out += string("Size ") + to_string(size) + string("\n");
 

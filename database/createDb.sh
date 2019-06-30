@@ -31,23 +31,38 @@ def main():
                 mysql.sendline('DROP TABLE object;')
                 waitForPrompt(mysql, 5)
 
+                mysql.sendline('DROP TABLE suffix;')
+                waitForPrompt(mysql, 5)
+
 		# Create tables
 		sql = 'CREATE TABLE avp ('
-		sql += 'avp_id INT UNSIGNED NOT NULL AUTO_INCREMENT,'
+		sql += 'id INT UNSIGNED NOT NULL AUTO_INCREMENT,'
 		sql += 'attribute VARCHAR(255) NOT NULL,'
 		sql += 'value VARCHAR(255) NOT NULL,'
-		sql += 'PRIMARY KEY (avp_id),'
+		sql += 'PRIMARY KEY (id),'
                 sql += 'UNIQUE KEY unique_key_constraint (attribute, value)'
 		sql += ');'
                 print(sql)
 		mysql.sendline(sql)
 		waitForPrompt(mysql, 5)
 
+                sql = 'CREATE TABLE suffix ('
+                sql += 'id INT UNSIGNED NOT NULL AUTO_INCREMENT,'
+                sql += 'suffix VARCHAR(255) NOT NULL,'
+                sql += 'PRIMARY KEY (id),'
+                sql += 'UNIQUE KEY unique_key_constraints (suffix)'
+                sql += ');'
+                print(sql)
+                mysql.sendline(sql)
+                waitForPrompt(mysql, 5)
+
                 sql = 'CREATE TABLE object ('
-                sql += 'obj_id INT UNSIGNED NOT NULL AUTO_INCREMENT,'
+                sql += 'id INT UNSIGNED NOT NULL AUTO_INCREMENT,'
                 sql += 'sha1 VARCHAR(64) NOT NULL,'
                 sql += 'access_counter INT UNSIGNED NOT NULL,'
-                sql += 'PRIMARY KEY (obj_id),'
+                sql += 'suffix_id INT UNSIGNED NOT NULL,'
+                sql += 'PRIMARY KEY (id),'
+                sql += 'FOREIGN KEY (suffix_id) REFERENCES suffix(id) ON UPDATE CASCADE,'
                 sql += 'UNIQUE KEY unique_key_constraint (sha1)'
                 sql += ');'
                 print(sql)
@@ -55,11 +70,11 @@ def main():
                 waitForPrompt(mysql, 5)
 
                 sql = 'CREATE TABLE tag ('
-                sql += 'tag_id INT UNSIGNED NOT NULL AUTO_INCREMENT,'
+                sql += 'id INT UNSIGNED NOT NULL AUTO_INCREMENT,'
                 sql += 'obj_id INT UNSIGNED NOT NULL,'
                 sql += 'avp_id INT UNSIGNED NOT NULL,'
-                sql += 'PRIMARY KEY (tag_id),'
-                sql += 'FOREIGN KEY (obj_id) REFERENCES object(obj_id) ON UPDATE CASCADE,'
+                sql += 'PRIMARY KEY (id),'
+                sql += 'FOREIGN KEY (obj_id) REFERENCES object(id) ON UPDATE CASCADE,'
                 sql += 'UNIQUE KEY unique_key_constraints (obj_id, avp_id)'
                 sql += ');'
                 print(sql)

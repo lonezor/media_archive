@@ -1,0 +1,3 @@
+select object.sha1 from avp inner join tag on avp.avp_id = tag.avp_id inner join object on tag.obj_id = object.obj_id where (avp.attribute = 'Time.Weekday' and avp.value = 'Thursday') or (avp.attribute = 'Time.Weekday' and avp.value = 'Monday');
+
+include suffixes in object to avoid extra lookup
