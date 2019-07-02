@@ -1,5 +1,5 @@
-CFLAGS=-g3 -O0 `mysql_config --cflags`
-LIBS=/usr/lib/x86_64-linux-gnu/libmysqlclient.a -lpthread -ldl -lz
+CFLAGS=-g3 -O0 `mysql_config --cflags` `pkg-config --cflags gtk+-3.0`
+LIBS=/usr/lib/x86_64-linux-gnu/libmysqlclient.a -lpthread -ldl -lz `pkg-config --libs gtk+-3.0`
 
 all:
-	g++ ${CFLAGS} query.c -o mquery ${LIBS}
+	g++ ${CFLAGS} main.cpp query.cpp object.cpp window.cpp -o mquery ${LIBS}

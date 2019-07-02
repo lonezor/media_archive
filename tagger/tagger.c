@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 
+
 typedef enum {
     LONG_OPTION_OBJECT     = 1000,
     LONG_OPTION_ATTRIBUTE  = 1001,
