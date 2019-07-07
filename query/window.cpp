@@ -29,6 +29,8 @@ window::search_buttom_clicked(GtkWidget *widget, gpointer data)
 
     printf("search button clicked\n");
 
+    clear_image_grid(ctx);
+
     ctx->obj_list.clear();
     ctx->obj_map.clear();
 
@@ -65,9 +67,20 @@ window::search_buttom_clicked(GtkWidget *widget, gpointer data)
                              x++;
                          }
                 }
-            }
+          }
+
+        ctx->image_grid_cols = cols;
+
+        int entries = ctx->obj_list.size();
+        if (entries) {
+            char label[128];
+            snprintf(label, sizeof(label), "Image (%d %s)", entries, entries > 1 ? "matches" : "match");
+            gtk_label_set_text((GtkLabel*)ctx->lbl_image_page, label);
+        }
 
       gtk_widget_show_all(ctx->image_grid);
+
+      
 }
 
 gboolean
@@ -109,10 +122,23 @@ window::size_combo_changed(GtkWidget *widget, gpointer data)
 }
 
 void
+window::clear_image_grid(gtk_ctx_t* ctx)
+{
+    int i;
+    for(i=0; i < ctx->image_grid_cols; i++) {
+        gtk_grid_remove_column((GtkGrid*)ctx->image_grid, 0);
+    }
+
+    gtk_widget_show_all(ctx->image_grid);
+}
+
+void
 window::clear_button_clicked(GtkWidget *widget, gpointer data)
 {
     gtk_ctx_t* ctx = (gtk_ctx_t*)data;
 
+    clear_image_grid(ctx);
+    gtk_label_set_text((GtkLabel*)ctx->lbl_image_page, "Image");
 
     printf("%s\n", __func__);
 
@@ -148,10 +174,6 @@ GtkWidget* window::create_search_settings_container(gtk_ctx_t* ctx)
     gtk_combo_box_set_active((GtkComboBox*)ctx->cbo_thumb_size, 1);
     g_signal_connect (ctx->cbo_thumb_size, "changed", G_CALLBACK (size_combo_changed), ctx);
 
-    // Padding
-    GtkWidget* hpadding_01 = gtk_event_box_new();
-    gtk_widget_set_size_request((GtkWidget*)hpadding_01, 10, 20);
-
     // Search Criteria Frame: Column #2 - Thumbnail quality
     ctx->cbo_thumb_quality = gtk_combo_box_text_new();
     gtk_combo_box_text_append_text((GtkComboBoxText*)ctx->cbo_thumb_quality, "High quality");
@@ -159,27 +181,15 @@ GtkWidget* window::create_search_settings_container(gtk_ctx_t* ctx)
     gtk_combo_box_set_active((GtkComboBox*)ctx->cbo_thumb_quality, 0);
     g_signal_connect (ctx->cbo_thumb_quality, "changed", G_CALLBACK (quality_combo_changed), ctx);
 
-    // Padding
-    GtkWidget* hpadding_02 = gtk_event_box_new();
-    gtk_widget_set_size_request((GtkWidget*)hpadding_02, 10, 20);
-
     // Search Criteria Frame: Column #3 - Search entry
     GtkWidget* query_entry = gtk_entry_new();
     gtk_widget_set_size_request((GtkWidget*)query_entry, 600, 30);
     gtk_entry_set_text((GtkEntry*)query_entry, ctx->query.c_str());
 
-    // Padding
-    GtkWidget* hpadding_03 = gtk_event_box_new();
-    gtk_widget_set_size_request((GtkWidget*)hpadding_03, 10, 20);
-
     // Search Criteria Frame: Column #3 - Show button
     GtkWidget* search_button = gtk_button_new_with_label("Show");
     g_signal_connect (search_button, "clicked", G_CALLBACK (search_buttom_clicked), ctx);
     gtk_widget_set_size_request((GtkWidget*)search_button, 50, 30);
-
-    // Padding
-    GtkWidget* hpadding_04 = gtk_event_box_new();
-    gtk_widget_set_size_request((GtkWidget*)hpadding_04, 10, 20);
 
     // Search Criteria Frame: Column #3 - Clear button
     GtkWidget* clear_button = gtk_button_new_with_label("Clear");
@@ -187,38 +197,27 @@ GtkWidget* window::create_search_settings_container(gtk_ctx_t* ctx)
     gtk_widget_set_size_request((GtkWidget*)clear_button, 50, 30);
 
     // Pack in horizontal box
-    GtkWidget* hbox = gtk_hbox_new (FALSE, 0);
+    GtkWidget* hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
     gtk_box_pack_start (GTK_BOX (hbox), ctx->cbo_thumb_size, FALSE, FALSE, 0);
-    gtk_box_pack_start (GTK_BOX (hbox), hpadding_01, FALSE, FALSE, 0);
     gtk_box_pack_start (GTK_BOX (hbox), ctx->cbo_thumb_quality, FALSE, FALSE, 0);  
-    gtk_box_pack_start (GTK_BOX (hbox), hpadding_02, FALSE, FALSE, 0);
     gtk_box_pack_start (GTK_BOX (hbox), query_entry, FALSE, FALSE, 0);
-    gtk_box_pack_start (GTK_BOX (hbox), hpadding_03, FALSE, FALSE, 0);
     gtk_box_pack_start (GTK_BOX (hbox), search_button, FALSE, FALSE, 0);
-    gtk_box_pack_start (GTK_BOX (hbox), hpadding_04, FALSE, FALSE, 0);
     gtk_box_pack_start (GTK_BOX (hbox), clear_button, FALSE, FALSE, 0);
 
     // Pack in vertical frame box
-    GtkWidget* vbox_criterias_frame = gtk_vbox_new (FALSE, 0);
+    GtkWidget* vbox_criterias_frame = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
     gtk_box_pack_start (GTK_BOX (vbox_criterias_frame), hbox, FALSE, FALSE, 0);
     gtk_container_set_border_width (GTK_CONTAINER (vbox_criterias_frame), 10);
 
      // Create 'search criterias' frame
     GtkWidget* criterias_frame = gtk_frame_new ("Search criterias");
 
-    // Padding
-    GtkWidget* frame_padding = gtk_event_box_new();
-    gtk_widget_set_size_request((GtkWidget*)frame_padding, 100, 10);
-
     gtk_container_add (GTK_CONTAINER (criterias_frame), vbox_criterias_frame);
 
      // Pack all in in vertical box
-    GtkWidget* vbox = gtk_vbox_new (FALSE, 0);
+    GtkWidget* vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
     gtk_box_pack_start (GTK_BOX (vbox), criterias_frame, FALSE, FALSE, 0);
 
-
-
-    gtk_box_pack_start (GTK_BOX (vbox), frame_padding, FALSE, FALSE, 0);
     gtk_container_set_border_width (GTK_CONTAINER (vbox), 10);
 
     return vbox;
@@ -247,7 +246,7 @@ GtkWidget* window::create_image_page_container(gtk_ctx_t* ctx)
     gtk_widget_set_size_request((GtkWidget*)bottom_padding, 100, 10);
 
     // Pack in vertical box
-    GtkWidget* vbox = gtk_vbox_new (FALSE, 0);
+    GtkWidget* vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
     gtk_box_pack_start (GTK_BOX (vbox), top_padding, FALSE, FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox), scrolled_window, FALSE, FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox), bottom_padding, FALSE, FALSE, 0);
@@ -257,14 +256,14 @@ GtkWidget* window::create_image_page_container(gtk_ctx_t* ctx)
 
 GtkWidget* window::create_audio_page_container(gtk_ctx_t* ctx)
 {
-    GtkWidget* vbox = gtk_vbox_new (FALSE, 0);
+    GtkWidget* vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
 //http://zetcode.com/gui/gtk2/gtktreeview/
     return vbox;
 }
 
 GtkWidget* window::create_video_page_container(gtk_ctx_t* ctx)
 {
-    GtkWidget* vbox = gtk_vbox_new (FALSE, 0);
+    GtkWidget* vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
 //http://zetcode.com/gui/gtk2/gtktreeview/
     return vbox;
 }
@@ -277,27 +276,27 @@ void window::activate(GtkApplication* app, gpointer user_data) // static: callba
     GtkWidget* window = gtk_application_window_new (app);
     assert(window);
 
-    GtkWidget* vbox = gtk_vbox_new (FALSE, 0);
+    GtkWidget* vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
 
     GtkWidget* search_settings_vbox = create_search_settings_container(ctx);
     
  
-    GtkWidget* image_page = gtk_label_new("Image");
-    GtkWidget* audio_page = gtk_label_new("Audio");
-    GtkWidget* video_page = gtk_label_new("Video");
+    ctx->lbl_image_page = gtk_label_new("Image");
+    ctx->lbl_audio_page = gtk_label_new("Audio");
+    ctx->lbl_video_page = gtk_label_new("Video");
 
     GtkWidget* notebook = gtk_notebook_new();
     gtk_notebook_append_page ((GtkNotebook*)notebook,
                           create_image_page_container(ctx),
-                          image_page);
+                          ctx->lbl_image_page);
 
 gtk_notebook_append_page ((GtkNotebook*)notebook,
                           create_audio_page_container(ctx),
-                          audio_page);
+                          ctx->lbl_audio_page);
 
     gtk_notebook_append_page ((GtkNotebook*)notebook,
                           create_video_page_container(ctx),
-                          video_page);
+                          ctx->lbl_video_page);
 
 
 

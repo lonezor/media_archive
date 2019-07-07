@@ -15,6 +15,12 @@ typedef struct
     thumbnail_quality_t thumb_quality;
     GtkWidget* cbo_thumb_quality;
     GtkWidget* cbo_thumb_size;
+    int image_grid_cols;
+
+    GtkWidget* lbl_image_page;
+    GtkWidget* lbl_audio_page;
+    GtkWidget* lbl_video_page;
+
 } gtk_ctx_t;
 
 class window
@@ -43,6 +49,8 @@ private:
     static GtkWidget* create_image_page_container(gtk_ctx_t* ctx);
     static GtkWidget* create_audio_page_container(gtk_ctx_t* ctx);
     static GtkWidget* create_video_page_container(gtk_ctx_t* ctx);
+
+    static void clear_image_grid(gtk_ctx_t* ctx);
     
     gtk_ctx_t gtk_ctx;
 
