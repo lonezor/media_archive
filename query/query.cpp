@@ -214,8 +214,11 @@ translate_cond(char* user_cond, int user_cond_size, char* sql_cond, int sql_cond
     // Time.Weekday == Monday
 
     operator_t op = next_operator(user_cond);
+
+    // Only attribute
     if (op == OPERATOR_NONE) {
-        return false;
+        snprintf(sql_cond, sql_cond_size, "WHERE (avp.attribute = '%s')", user_cond);
+        return true;
     }
 
     char* attribute = attribute_from_expr(user_cond, op);
@@ -317,6 +320,8 @@ void get_object_results(const char* sql, std::list<object>& obj_list, std::unord
         sscanf(row[1], "%s", (char*)&sha1);
         sscanf(row[2], "%s", (char*)&suffixes);
         sscanf(row[3], "%u", &access_counter);
+
+        printf("found sha1 %s\n", sha1);
 
         object o = object(obj_id, std::string(sha1), std::string(suffixes), access_counter);
         obj_list.push_back(o);
