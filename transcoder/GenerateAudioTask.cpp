@@ -169,7 +169,8 @@ void GenerateAudioTask::execute() {
 		}
 	}
 	else if (file->type == File::FILE_TYPE_MP2 || file->type == File::FILE_TYPE_MP3 ||
-		     file->type == File::FILE_TYPE_WAV || file->type == File::FILE_TYPE_FLAC) {
+		     file->type == File::FILE_TYPE_WAV || file->type == File::FILE_TYPE_FLAC ||
+			 file->type == File::FILE_TYPE_AAC) {
 
 		// Sox doesn't support all encoding formats. Convert to WAV via FFmpeg and then sox to FLAC
 		snprintf(cmd, sizeof(cmd), "ffmpeg -i \"%s\" \"%s/%s_tmp.wav\"", // note: rom path must end with /

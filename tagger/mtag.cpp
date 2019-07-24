@@ -50,6 +50,8 @@ presentation of these attributes as an indication of what can be used. These avp
     printf(" -a --add-tag=TAG   Add tag association for media object\n");
     printf(" -d --delete-tag=TAG   Remove tag association for media object\n");
     printf(" -f --tag-file=PATH    Path to meta data file containing tags\n");
+    printf(" -t --timestamp=EPOCH  Generate timestamp info based on epoch and exit\n");
+    
 
 
 }

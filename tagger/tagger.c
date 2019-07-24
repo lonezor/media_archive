@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <iostream>
+#include <time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 
 typedef enum {
@@ -16,6 +20,7 @@ typedef enum {
     LONG_OPTION_ADD_TAG    = 1003,
     LONG_OPTION_REMOVE_TAG = 1004,
     LONG_OPTION_LOG_LEVEL  = 1005,
+    LONG_OPTION_TIMESTAMP  = 1006,
 } long_option_t;
 
 typedef enum {
@@ -48,6 +53,7 @@ static char* opt_value = NULL;
           {"add-tag",    no_argument,       &opt_add_tag,    LONG_OPTION_ADD_TAG},
           {"remove-tag", no_argument,       &opt_remove_tag, LONG_OPTION_REMOVE_TAG},
           {"log-level",  required_argument, 0,               LONG_OPTION_LOG_LEVEL},
+          {"timestamp",  required_argument, 0,               LONG_OPTION_TIMESTAMP},
           {0, 0, 0, 0}
         };
 
@@ -268,6 +274,7 @@ void print_help()
     printf("    --add-tag            Add tag based on given object and AVP. If not present, AVP will be created\n");
     printf("    --remove-tag         Remove tag based on given object and AVP. Only tag affected (not AVP itself)\n");
     printf("    --log-level=INTEGER  Log level\n");
+    printf("    --timestamp=EPOCH    Print timestamp tags and exit\n");
     printf(" -h --help               This screen\n");    
 }
 
@@ -284,6 +291,45 @@ void extract_avp(char* tokStr, int tokStrSize, char* line, int len, char** attr,
 
     *attr = attribute;
     *val = value;
+}
+
+void print_timestamp(const char* epoch)
+{
+    std::string out = "";
+
+    time_t ts = (time_t)atol(epoch);
+
+	out += std::string("Time.Epoch ") + std::string(epoch) + std::string("\n");	
+
+	struct tm * tInfo;
+	char tStr[200];
+	tInfo = localtime(&ts);
+
+	strftime(tStr, sizeof(tStr), "%Y-%m-%d", tInfo);
+	out += std::string("Time.Date ") + std::string(tStr) + std::string("\n");
+
+	strftime(tStr, sizeof(tStr), "%Y", tInfo);
+	out += std::string("Time.Year ") + std::string(tStr) + std::string("\n");
+
+	strftime(tStr, sizeof(tStr), "%B", tInfo);
+	out += std::string("Time.Month ") + std::string(tStr) + std::string("\n");
+
+	strftime(tStr, sizeof(tStr), "%d", tInfo);
+	out += std::string("Time.Day ") + std::string(tStr) + std::string("\n");
+
+	strftime(tStr, sizeof(tStr), "%A", tInfo);
+	out += std::string("Time.Weekday ") + std::string(tStr) + std::string("\n");
+
+	strftime(tStr, sizeof(tStr), "%H", tInfo);
+	out += std::string("Time.Hour ") + std::string(tStr) + std::string("\n");
+
+	strftime(tStr, sizeof(tStr), "%M", tInfo);
+	out += std::string("Time.Minute ") + std::string(tStr) + std::string("\n");
+
+	strftime(tStr, sizeof(tStr), "%S", tInfo);
+	out += std::string("Time.Second ") + std::string(tStr) + std::string("\n");
+
+    printf("%s\n", out.c_str());
 }
 
 int main(int argc, char* argv[])
@@ -320,6 +366,10 @@ int main(int argc, char* argv[])
                 break;
             case LONG_OPTION_REMOVE_TAG:
                 // opt_remove_tag has been set
+                break;
+            case LONG_OPTION_TIMESTAMP:
+                print_timestamp(optarg);
+                return 0;
                 break;
             case LONG_OPTION_LOG_LEVEL:
                 opt_log_level = atoi(optarg);

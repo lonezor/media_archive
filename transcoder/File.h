@@ -38,9 +38,10 @@ public:
 		FILE_TYPE_MP2     = 15,
 		FILE_TYPE_MP3     = 16,
 		FILE_TYPE_FLAC    = 17,
-		FILE_TYPE_WAV     = 18,
-		FILE_TYPE_MOD     = 19,
-		FILE_TYPE_SID     = 20,
+		FILE_TYPE_AAC     = 18,
+		FILE_TYPE_WAV     = 19,
+		FILE_TYPE_MOD     = 20,
+		FILE_TYPE_SID     = 21,
 	};
 
 	File(string dirPath, string name);

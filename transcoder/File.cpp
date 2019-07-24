@@ -41,7 +41,9 @@ File::File(string dirPath, string name) {
 
 bool File::endsWith(const string& s, const string& suffix)
 {
-    return s.rfind(suffix) == (s.size() - suffix.size());
+	size_t pos = s.rfind(suffix);
+	size_t ref = (s.size() - suffix.size());
+    return (pos == ref);
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/
@@ -61,6 +63,8 @@ void File::determineFileType() {
 
 	string s = name;
 	toLower(s);
+
+	printf("name '%s'\n", name.c_str());
 
 	if (endsWith(s, ".jpg")) {
 		type = FILE_TYPE_JPG;
@@ -107,6 +111,12 @@ void File::determineFileType() {
 	else if (endsWith(s, ".mp3")) {
 		type = FILE_TYPE_MP3;
 	}
+	else if (endsWith(s, ".aac")) {
+		type = FILE_TYPE_AAC;
+	}
+	else if (endsWith(s, ".flac")) {
+		type = FILE_TYPE_FLAC;
+	}
 	else if (endsWith(s, ".wav")) {
 		type = FILE_TYPE_WAV;
 	}
@@ -119,6 +129,8 @@ void File::determineFileType() {
 	else if (endsWith(s, ".hash")) {
 		type = FILE_TYPE_HASH;
 	}
+
+	printf("type %d\n", (int)type);
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/
@@ -151,6 +163,7 @@ string File::fileTypeSuffix()
 		case FILE_TYPE_WAV: return ".wav";
 		case FILE_TYPE_MOD: return ".mod";
 		case FILE_TYPE_SID: return ".sid";
+		case FILE_TYPE_AAC: return ".aac";
 		default:
 			return "";
 	}
@@ -182,6 +195,8 @@ string File::getNameWithoutFileType() {
     return name;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------*/
+
 string File::getFileEnding() {
 	switch (type) {
 	case FILE_TYPE_JPG:
@@ -212,12 +227,14 @@ string File::getPath() {
 /*-------------------------------------------------------------------------------------------------------------------*/
 
 void File::populateSupportedMetaDataKeyMap() {
-	supportedMetaDataKeyMap["Artist"]                          = "Media Info";
-	supportedMetaDataKeyMap["Album"]                           = "Media Info";
-	supportedMetaDataKeyMap["Genre"]                           = "Media Info";
-	supportedMetaDataKeyMap["Track"]                           = "Media Info";
-	supportedMetaDataKeyMap["Title"]                           = "Media Info";
-	supportedMetaDataKeyMap["Audio"]                           = "Media Info";                           
+	supportedMetaDataKeyMap["Audio"]                           = "Media Info";
+	supportedMetaDataKeyMap["Audio.Artist"]                    = "Media Info";
+	supportedMetaDataKeyMap["Audio.Album"]                     = "Media Info";
+	supportedMetaDataKeyMap["Audio.Genre"]                     = "Media Info";
+	supportedMetaDataKeyMap["Audio.Track"]                     = "Media Info";
+	supportedMetaDataKeyMap["Audio.TotalTracks"]               = "Media Info";
+	supportedMetaDataKeyMap["Audio.Title"]                     = "Media Info";
+	supportedMetaDataKeyMap["Audio.Duration"]                  = "Media Info";                           
 	supportedMetaDataKeyMap["Image"]                           = "Media Info";
 	supportedMetaDataKeyMap["Image.Width"]                     = "Media Info";
 	supportedMetaDataKeyMap["Image.Height"]                    = "Media Info";
@@ -662,7 +679,7 @@ bool File::typeIsAudio() {
 	return (type == FILE_TYPE_MID  || type == FILE_TYPE_MP2 ||
 		    type == FILE_TYPE_MP3  || type == FILE_TYPE_WAV ||
 		    type == FILE_TYPE_FLAC || type == FILE_TYPE_MOD || 
-		    type == FILE_TYPE_SID);
+		    type == FILE_TYPE_AAC || type == FILE_TYPE_SID);
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/

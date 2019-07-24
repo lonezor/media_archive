@@ -291,6 +291,61 @@ void query_print_attribute_list()
     mysql_free_result(result);
 }
 
+char* get_object_avp_value(uint32_t obj_id, const char* attribute)
+{
+    char sql[1024];
+
+    snprintf(sql, sizeof(sql), "SELECT avp.value FROM avp INNER JOIN tag ON avp.id = tag.avp_id WHERE tag.obj_id = %d and avp.attribute = \"%s\";",
+    (int)obj_id, attribute);
+
+    if (mysql_query(&mysql, sql))
+    {
+        assert(0);
+    }
+
+    MYSQL_RES *result = mysql_store_result(&mysql);
+
+    if (result == NULL)
+    {
+        assert(0);
+    }
+
+    int num_fields = mysql_num_fields(result);
+
+    MYSQL_ROW row;
+
+    char avp_value[512] = {0};
+
+    while ((row = mysql_fetch_row(result)))
+    {
+        sscanf(row[0], "%s", avp_value);
+        snprintf(avp_value, sizeof(avp_value), row[0], strlen(row[0]));
+    }
+
+    mysql_free_result(result);
+
+    return strdup(avp_value);
+} 
+
+
+void retrieve_audio_metadata(object& obj) {
+    char* artist = get_object_avp_value(obj.get_obj_id(), "Audio.Artist");
+    char* album = get_object_avp_value(obj.get_obj_id(), "Audio.Album");
+    char* track = get_object_avp_value(obj.get_obj_id(), "Audio.Track");
+    char* title = get_object_avp_value(obj.get_obj_id(), "Audio.Title");
+    char* duration = get_object_avp_value(obj.get_obj_id(), "Audio.Duration");
+    char* genre = get_object_avp_value(obj.get_obj_id(), "Audio.Genre");
+
+    obj.set_audio_metadata(std::string(artist), std::string(album), atoi(track), std::string(title), std::string(duration), std::string(genre));
+    
+    free(artist);
+    free(album);
+    free(track);
+    free(title);
+    free(duration);
+    free(genre);
+}
+
 void get_object_results(const char* sql, std::list<object>& obj_list, std::unordered_map<uint32_t, object>& obj_map)
 {
     uint32_t id = NO_ID;
@@ -321,9 +376,12 @@ void get_object_results(const char* sql, std::list<object>& obj_list, std::unord
         sscanf(row[2], "%s", (char*)&suffixes);
         sscanf(row[3], "%u", &access_counter);
 
-        printf("found sha1 %s\n", sha1);
-
         object o = object(obj_id, std::string(sha1), std::string(suffixes), access_counter);
+
+        if (o.get_object_type() == OBJECT_TYPE_AUDIO) {
+            retrieve_audio_metadata(o);
+        }
+
         obj_list.push_back(o);
         obj_map[obj_id] = o;
     }
@@ -344,7 +402,7 @@ void query_execute(std::string user_query, std::list<object>& obj_list, std::uno
         // (avp.attribute = 'Time.Weekday' and avp.value = 'Monday') and (avp.attribute = 'Time.Year' and avp.value = '2017')
         translate_cond(user_cond, sizeof(user_cond), sql_cond, sizeof(sql_cond));
 
-        snprintf(sql_query, sizeof(sql_query), "SELECT object.id, object.sha1, suffix.suffix, object.access_counter FROM avp INNER JOIN tag on avp.id = tag.avp_id INNER JOIN object on tag.obj_id = object.id INNER JOIN suffix on object.suffix_id = suffix.id %s ORDER BY object.access_counter DESC LIMIT 30;" , sql_cond);
+        snprintf(sql_query, sizeof(sql_query), "SELECT object.id, object.sha1, suffix.suffix, object.access_counter FROM avp INNER JOIN tag on avp.id = tag.avp_id INNER JOIN object on tag.obj_id = object.id INNER JOIN suffix on object.suffix_id = suffix.id %s ORDER BY object.access_counter DESC LIMIT 10000;" , sql_cond);
         printf("%s\n", sql_query);
 
         // For now we have enough to start using the system. Long term we need to store object info in hash table and

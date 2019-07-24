@@ -18,10 +18,14 @@ object::object() {
 
 void object::determine_object_type()
 {
+    
     if (strstr(suffixes_.c_str(), ".flac")) {
         object_type_ = OBJECT_TYPE_AUDIO;
-    } else {
-        object_type_ = OBJECT_TYPE_VISUAL;
+    } else if (strstr(suffixes_.c_str(), ".mp4")) {
+        object_type_ = OBJECT_TYPE_VIDEO;
+    }
+    else {
+        object_type_ = OBJECT_TYPE_IMAGE;
     }
 }
 
@@ -80,6 +84,21 @@ std::string object::get_thumbnail_path(thumbnail_size_t size, thumbnail_quality_
     }
 
     return sha1_ + std::string(thumbnail_size) + std::string(file_ending);
+}
+
+void object::set_audio_metadata(std::string artist,
+                                std::string album,
+                                int track,
+                                std::string title,
+                                std::string duration,
+                                std::string genre)
+{
+    audio_metadata.artist = artist;
+    audio_metadata.album = album;
+    audio_metadata.track = track;
+    audio_metadata.title = title;
+    audio_metadata.duration = duration;
+    audio_metadata.genre = genre;
 }
 
 thumbnail_size_t object::get_highest_thumbnail_size()

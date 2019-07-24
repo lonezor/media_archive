@@ -4,8 +4,9 @@
 #include <stdint.h>
 
 typedef enum {
-    OBJECT_TYPE_VISUAL,
+    OBJECT_TYPE_IMAGE,
     OBJECT_TYPE_AUDIO,
+    OBJECT_TYPE_VIDEO,
 } object_type_t;
 
 typedef enum {
@@ -22,6 +23,15 @@ typedef enum {
     THUMBNAIL_QUALITY_LOW,
     THUMBNAIL_QUALITY_HIGH,
 } thumbnail_quality_t;
+
+typedef struct {
+  std::string artist;
+  std::string album;
+  int track;
+  std::string title;
+  std::string duration;
+  std::string genre;
+} audio_metadata_t;
 
 class object {
 public:
@@ -40,7 +50,15 @@ public:
 
 
     std::string get_audio_path();  
-    std::string get_thumbnail_path(thumbnail_size_t size, thumbnail_quality_t quality);  
+    std::string get_thumbnail_path(thumbnail_size_t size, thumbnail_quality_t quality);
+void set_audio_metadata(std::string artist,
+                                std::string album,
+                                int track,
+                                std::string title,
+                                std::string duration,
+                                std::string genre);
+    
+    audio_metadata_t audio_metadata;
 
 private:
     uint32_t obj_id_;

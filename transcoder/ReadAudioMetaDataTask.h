@@ -16,6 +16,7 @@ public:
 
 private:
     string extractAttributeValue(string line);
+    string extractDuration(string line);
     File*  file;
 };
 

@@ -4,6 +4,17 @@
 #define SCREEN_WIDTH (1440)
 #define SCREEN_HEIGHT (768)
 
+enum
+{
+  COL_ARTIST = 0,
+  COL_ALBUM,
+  COL_TRACK,
+  COL_TITLE,
+  COL_DURATION,
+  COL_GENRE,
+  NUM_COLS
+};
+
 window::window(std::string query)
 {
     gtk_ctx.query = query;
@@ -22,27 +33,17 @@ void window::show()
     g_object_unref (app);
 }
 
-void
-window::search_buttom_clicked(GtkWidget *widget, gpointer data)
+void window::show_image_results(gtk_ctx_t* ctx)
 {
-    gtk_ctx_t* ctx = (gtk_ctx_t*)data;
-
-    printf("search button clicked\n");
-
-    clear_image_grid(ctx);
-
-    ctx->obj_list.clear();
-    ctx->obj_map.clear();
-
-    query_execute(ctx->query, ctx->obj_list, ctx->obj_map);
-
+clear_image_grid(ctx);
     int cols = (SCREEN_WIDTH) / (ctx->thumb_size + 20);
+    int image_objects = 0;
 
     int x=0;
     int y=0;
     for (std::list<object>::iterator it=ctx->obj_list.begin(); it != ctx->obj_list.end(); ++it) {
                 object_type_t object_type = (*it).get_object_type();
-                if (object_type != OBJECT_TYPE_AUDIO) {
+                if (object_type == OBJECT_TYPE_IMAGE) {
                     std::string thumbnail_path = "/home/output/";
                     thumbnail_path += (*it).get_thumbnail_path(ctx->thumb_size, ctx->thumb_quality);
                   //  printf("thumbnail_path %s\n", thumbnail_path.c_str());
@@ -66,21 +67,72 @@ window::search_buttom_clicked(GtkWidget *widget, gpointer data)
                          } else {
                              x++;
                          }
+                    image_objects++;
                 }
           }
 
         ctx->image_grid_cols = cols;
 
-        int entries = ctx->obj_list.size();
-        if (entries) {
+        if (image_objects) {
             char label[128];
-            snprintf(label, sizeof(label), "Image (%d %s)", entries, entries > 1 ? "matches" : "match");
+            snprintf(label, sizeof(label), "Image (%d %s)", image_objects, image_objects > 1 ? "matches" : "match");
             gtk_label_set_text((GtkLabel*)ctx->lbl_image_page, label);
         }
 
       gtk_widget_show_all(ctx->image_grid);
+}
 
-      
+void window::show_audio_results(gtk_ctx_t* ctx)
+{
+    int audio_objects = 0;
+    GtkTreeIter    iter;
+
+    for (std::list<object>::iterator it=ctx->obj_list.begin(); it != ctx->obj_list.end(); ++it) {
+                object_type_t object_type = (*it).get_object_type();
+                if (object_type == OBJECT_TYPE_AUDIO) {
+                     GtkTreeIter    iter;
+                    gtk_list_store_append (ctx->audio_list_store, &iter);
+                    gtk_list_store_set (ctx->audio_list_store, &iter,
+                        COL_ARTIST, (*it).audio_metadata.artist.c_str(),
+                        COL_ALBUM, (*it).audio_metadata.album.c_str(),
+                         COL_TRACK, (*it).audio_metadata.track,
+                         COL_TITLE, (*it).audio_metadata.title.c_str(),
+                         COL_DURATION, (*it).audio_metadata.duration.c_str(),
+                         COL_GENRE, (*it).audio_metadata.genre.c_str(),
+                         -1);
+                    audio_objects++;
+                }
+    }
+
+    if (audio_objects) {
+        char label[128];
+        snprintf(label, sizeof(label), "Audio (%d %s)", audio_objects, audio_objects > 1 ? "matches" : "match");
+        gtk_label_set_text((GtkLabel*)ctx->lbl_audio_page, label);
+    }
+}
+
+void window::show_video_results(gtk_ctx_t* ctx)
+{
+
+}
+
+void
+window::search_buttom_clicked(GtkWidget *widget, gpointer data)
+{
+    gtk_ctx_t* ctx = (gtk_ctx_t*)data;
+
+    printf("search button clicked\n");
+
+    ctx->query = std::string(gtk_entry_get_text((GtkEntry*)ctx->query_entry));
+
+    ctx->obj_list.clear();
+    ctx->obj_map.clear();
+
+    query_execute(ctx->query, ctx->obj_list, ctx->obj_map);
+
+    show_image_results(ctx);
+    show_audio_results(ctx);
+    show_video_results(ctx);
 }
 
 gboolean
@@ -139,6 +191,8 @@ window::clear_button_clicked(GtkWidget *widget, gpointer data)
 
     clear_image_grid(ctx);
     gtk_label_set_text((GtkLabel*)ctx->lbl_image_page, "Image");
+    gtk_label_set_text((GtkLabel*)ctx->lbl_audio_page, "Audio");
+    gtk_label_set_text((GtkLabel*)ctx->lbl_video_page, "Video");
 
     printf("%s\n", __func__);
 
@@ -182,9 +236,9 @@ GtkWidget* window::create_search_settings_container(gtk_ctx_t* ctx)
     g_signal_connect (ctx->cbo_thumb_quality, "changed", G_CALLBACK (quality_combo_changed), ctx);
 
     // Search Criteria Frame: Column #3 - Search entry
-    GtkWidget* query_entry = gtk_entry_new();
-    gtk_widget_set_size_request((GtkWidget*)query_entry, 600, 30);
-    gtk_entry_set_text((GtkEntry*)query_entry, ctx->query.c_str());
+    ctx->query_entry = gtk_entry_new();
+    gtk_widget_set_size_request((GtkWidget*)ctx->query_entry, 600, 30);
+    gtk_entry_set_text((GtkEntry*)ctx->query_entry, ctx->query.c_str());
 
     // Search Criteria Frame: Column #3 - Show button
     GtkWidget* search_button = gtk_button_new_with_label("Show");
@@ -200,7 +254,7 @@ GtkWidget* window::create_search_settings_container(gtk_ctx_t* ctx)
     GtkWidget* hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
     gtk_box_pack_start (GTK_BOX (hbox), ctx->cbo_thumb_size, FALSE, FALSE, 0);
     gtk_box_pack_start (GTK_BOX (hbox), ctx->cbo_thumb_quality, FALSE, FALSE, 0);  
-    gtk_box_pack_start (GTK_BOX (hbox), query_entry, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (hbox), ctx->query_entry, FALSE, FALSE, 0);
     gtk_box_pack_start (GTK_BOX (hbox), search_button, FALSE, FALSE, 0);
     gtk_box_pack_start (GTK_BOX (hbox), clear_button, FALSE, FALSE, 0);
 
@@ -254,10 +308,76 @@ GtkWidget* window::create_image_page_container(gtk_ctx_t* ctx)
     return vbox;
 }
 
+
+
+
+
 GtkWidget* window::create_audio_page_container(gtk_ctx_t* ctx)
 {
+    GtkCellRenderer* renderer;
+    GtkTreeModel*     model;
+    GtkWidget*        view;
+
+    view = gtk_tree_view_new ();
+
+    renderer = gtk_cell_renderer_text_new ();
+    gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (view),
+                                               -1,      
+                                               "Artist",  
+                                               renderer,
+                                               "text", COL_ARTIST,
+                                               NULL);
+
+    renderer = gtk_cell_renderer_text_new ();
+    gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (view),
+                                               -1,      
+                                               "Album",  
+                                               renderer,
+                                               "text", COL_ALBUM,
+                                               NULL);
+
+    renderer = gtk_cell_renderer_text_new ();
+    gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (view),
+                                               -1,      
+                                               "Track",  
+                                               renderer,
+                                               "text", COL_TRACK,
+                                               NULL);
+
+    renderer = gtk_cell_renderer_text_new ();
+    gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (view),
+                                               -1,      
+                                               "Title",  
+                                               renderer,
+                                               "text", COL_TITLE,
+                                               NULL);
+
+    renderer = gtk_cell_renderer_text_new ();
+    gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (view),
+                                               -1,      
+                                               "Duration",  
+                                               renderer,
+                                               "text", COL_DURATION,
+                                               NULL);
+  
+    renderer = gtk_cell_renderer_text_new ();
+    gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (view),
+                                               -1,      
+                                               "Genre",  
+                                               renderer,
+                                               "text", COL_GENRE,
+                                               NULL);
+
+    ctx->audio_list_store = gtk_list_store_new (NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+
+    model = GTK_TREE_MODEL (ctx->audio_list_store);
+    gtk_tree_view_set_model (GTK_TREE_VIEW (view), model);
+
+    g_object_unref (model);
+
     GtkWidget* vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
-//http://zetcode.com/gui/gtk2/gtktreeview/
+    gtk_box_pack_start (GTK_BOX (vbox), view, FALSE, FALSE, 0);
+
     return vbox;
 }
 

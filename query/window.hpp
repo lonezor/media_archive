@@ -20,7 +20,8 @@ typedef struct
     GtkWidget* lbl_image_page;
     GtkWidget* lbl_audio_page;
     GtkWidget* lbl_video_page;
-
+    GtkWidget* query_entry;
+    GtkListStore* audio_list_store;
 } gtk_ctx_t;
 
 class window
@@ -51,6 +52,10 @@ private:
     static GtkWidget* create_video_page_container(gtk_ctx_t* ctx);
 
     static void clear_image_grid(gtk_ctx_t* ctx);
+
+    static void show_image_results(gtk_ctx_t* ctx);
+    static void show_audio_results(gtk_ctx_t* ctx);
+    static void show_video_results(gtk_ctx_t* ctx);
     
     gtk_ctx_t gtk_ctx;
 
