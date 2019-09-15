@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <string.h>
-#include <my_global.h>
+//#include <my_global.h>
 #include <mysql.h>
 #include <ctype.h>
+#include <assert.h>
 #include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -103,7 +104,7 @@ void connect_database()
 {
     mysql_init(&mysql);
     mysql_options(&mysql,MYSQL_READ_DEFAULT_GROUP,"your_prog_name");
-    if (!mysql_real_connect(&mysql,"localhost","root","unixrocks1","media_archive",0,NULL,0))
+    if (!mysql_real_connect(&mysql,"localhost","root","passwd","media_archive",0,NULL,0))
     {
         fprintf(stderr, "Failed to connect to database: Error: %s\n",
               mysql_error(&mysql));

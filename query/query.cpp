@@ -2,6 +2,7 @@
 #include <string.h>
 #include <my_global.h>
 #include <mysql.h>
+#include <assert.h>
 #include <ctype.h>
 #include <libgen.h>
 #include <stdio.h>

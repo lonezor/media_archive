@@ -1,3 +1,5 @@
+#if 0
+
 #include "window.hpp"
 #include <assert.h>
 
@@ -449,3 +451,5 @@ gboolean window::window_delete(GtkWidget* widget, GdkEvent* event, gpointer data
 
     return FALSE;
 }
+
+#endif

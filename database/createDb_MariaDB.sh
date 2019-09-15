@@ -3,9 +3,11 @@
 import pexpect
 
 PASSWORD='passwd'
+# mysqladmin -u root password passwd
 
 def waitForPrompt(mysql, timeout):
-	mysql.expect('.+mysql>', timeout)
+	mysql.expect('.+>', timeout)
+        print(mysql.before)
 
 def main():
 	# Safety
@@ -35,22 +37,23 @@ def main():
                 waitForPrompt(mysql, 5)
 
 		# Create tables
-		sql = 'CREATE TABLE avp ('
-		sql += 'id INT UNSIGNED NOT NULL AUTO_INCREMENT,'
-		sql += 'attribute VARCHAR(255) NOT NULL,'
-		sql += 'value VARCHAR(255) NOT NULL,'
-		sql += 'PRIMARY KEY (id),'
-                sql += 'UNIQUE KEY unique_key_constraint (attribute, value)'
-		sql += ');'
+
+                sql = "CREATE TABLE avp ("
+                sql += "id INT UNSIGNED NOT NULL AUTO_INCREMENT,"
+                sql += "attribute VARCHAR(50) NOT NULL,"
+                sql += "value VARCHAR(132) NOT NULL,"
+                sql += "CONSTRAINT avp_pk PRIMARY KEY (id),"
+                sql += "CONSTRAINT avp_uk UNIQUE KEY (attribute, value)"
+                sql += ")ROW_FORMAT=DYNAMIC;"
                 print(sql)
 		mysql.sendline(sql)
 		waitForPrompt(mysql, 5)
 
                 sql = 'CREATE TABLE suffix ('
                 sql += 'id INT UNSIGNED NOT NULL AUTO_INCREMENT,'
-                sql += 'suffix VARCHAR(255) NOT NULL,'
-                sql += 'PRIMARY KEY (id),'
-                sql += 'UNIQUE KEY unique_key_constraints (suffix)'
+                sql += 'suffix VARCHAR(132) NOT NULL,'
+                sql += 'CONSTRAINT suffix_pk PRIMARY KEY (id),'
+                sql += 'CONSTRAINT suffix_uk UNIQUE KEY (suffix)'
                 sql += ');'
                 print(sql)
                 mysql.sendline(sql)
@@ -61,9 +64,9 @@ def main():
                 sql += 'sha1 VARCHAR(64) NOT NULL,'
                 sql += 'access_counter INT UNSIGNED NOT NULL,'
                 sql += 'suffix_id INT UNSIGNED NOT NULL,'
-                sql += 'PRIMARY KEY (id),'
-                sql += 'FOREIGN KEY (suffix_id) REFERENCES suffix(id) ON UPDATE CASCADE,'
-                sql += 'UNIQUE KEY unique_key_constraint (sha1)'
+                sql += 'CONSTRAINT object_pk PRIMARY KEY (id),'
+                sql += 'CONSTRAINT object_fk FOREIGN KEY (suffix_id) REFERENCES suffix(id) ON UPDATE CASCADE,'
+                sql += 'CONSTRAINT object_uk UNIQUE KEY (sha1)'
                 sql += ');'
                 print(sql)
                 mysql.sendline(sql)
@@ -73,9 +76,9 @@ def main():
                 sql += 'id INT UNSIGNED NOT NULL AUTO_INCREMENT,'
                 sql += 'obj_id INT UNSIGNED NOT NULL,'
                 sql += 'avp_id INT UNSIGNED NOT NULL,'
-                sql += 'PRIMARY KEY (id),'
-                sql += 'FOREIGN KEY (obj_id) REFERENCES object(id) ON UPDATE CASCADE,'
-                sql += 'UNIQUE KEY unique_key_constraints (obj_id, avp_id)'
+                sql += 'CONSTRAINT tag_pk PRIMARY KEY (id),'
+                sql += 'CONSTRAINT tag_fk FOREIGN KEY (obj_id) REFERENCES object(id) ON UPDATE CASCADE,'
+                sql += 'CONSTRAINT tag_uk UNIQUE KEY (obj_id, avp_id)'
                 sql += ');'
                 print(sql)
                 mysql.sendline(sql)

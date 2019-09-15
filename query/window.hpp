@@ -1,5 +1,7 @@
 #pragma once
 
+#if 0
+
 #include <gtk/gtk.h>
 #include <string>
 #include "query.hpp"
@@ -60,3 +62,5 @@ private:
     gtk_ctx_t gtk_ctx;
 
 };
+
+#endif

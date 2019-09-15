@@ -283,8 +283,8 @@ int main(int argc, char* argv[])
         query_execute(std::string(user_cond), obj_list, obj_map);
 
         if (opt_gui) {
-            window w = window(std::string(user_cond));
-            w.show();   
+      //      window w = window(std::string(user_cond));
+        //    w.show();   
         } else {
             for (std::list<object>::iterator it=obj_list.begin(); it != obj_list.end(); ++it) {
                 object_type_t object_type = (*it).get_object_type();
