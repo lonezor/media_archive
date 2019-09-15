@@ -111,15 +111,69 @@ size_t curl_write_cb(void *ptr, size_t size, size_t nmemb, struct string *s)
     return bytes;
 }
 
-std::string authorize_object_url(std::string sha1, std::string account_token)
+std::string authorize_account(std::string account_token)
 {
   CURL *curl;
   CURLcode res;
  
   /* In windows, this will init the winsock stuff */ 
   curl_global_init(CURL_GLOBAL_ALL);
+
+   /* get a curl handle */ 
+  curl = curl_easy_init();
+  if(curl) {
+    /* First set the URL that is about to receive our POST. This URL can
+       just as well be a https:// URL if that is what should receive the
+       data. */ 
+    curl_easy_setopt(curl, CURLOPT_URL, "https://api.backblazeb2.com/b2api/v2/b2_authorize_account");
+
+    struct curl_slist *list = NULL;
+    char account_authorization[1024];
+    snprintf(account_authorization, sizeof(account_authorization), "Authorization: Basic %s", account_token.c_str());
+    list = curl_slist_append(list, account_authorization);
  
-  /* get a curl handle */ 
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_cb);
+ 
+    /* Perform the request, res will get the return code */ 
+    curl_resp = "";
+    res = curl_easy_perform(curl);
+    /* Check for errors */ 
+    if(res != CURLE_OK) {
+      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
+    }
+
+    curl_slist_free_all(list); /* free the list again */
+ 
+    /* always cleanup */ 
+    curl_easy_cleanup(curl);
+
+    curl_global_cleanup();
+
+    printf("curl_resp: '%s'\n", curl_resp.c_str());
+
+    size_t pos = curl_resp.find("authorizationToken");
+    if (pos != std::string::npos) {
+        pos += strlen("authorizationToken\": \"");
+        size_t end = curl_resp.find_first_of ('\"', pos);
+        return curl_resp.substr(pos, end - pos);
+    }
+    else {
+        return "";
+    }
+  }
+}
+
+std::string authorize_object_url(std::string sha1, std::string session_token)
+{
+  CURL *curl;
+  CURLcode res;
+ 
+  /* In windows, this will init the winsock stuff */ 
+  curl_global_init(CURL_GLOBAL_ALL);
+
+   /* get a curl handle */ 
   curl = curl_easy_init();
   if(curl) {
     /* First set the URL that is about to receive our POST. This URL can
@@ -128,9 +182,9 @@ std::string authorize_object_url(std::string sha1, std::string account_token)
     curl_easy_setopt(curl, CURLOPT_URL, "https://api002.backblazeb2.com/b2api/v1/b2_get_download_authorization");
 
     struct curl_slist *list = NULL;
-    char account_authorization[1024];
-    snprintf(account_authorization, sizeof(account_authorization), "Authorization: %s", account_token.c_str());
-    list = curl_slist_append(list, account_authorization);
+    char object_authorization[1024];
+    snprintf(object_authorization, sizeof(object_authorization), "Authorization: %s", session_token.c_str());
+    list = curl_slist_append(list, object_authorization);
     list = curl_slist_append(list, "Content-Type: text/plain");
  
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
@@ -185,12 +239,12 @@ std::string get_object_url(std::string sha1, std::string auth_token)
     return std::string(url);
 }
 
-void play_object(object& obj, std::string account_token)
+void play_object(object& obj, std::string session_token)
 {
     std::cout << "Play " << obj.audio_metadata.title << std::endl;
 
     // Authorize
-    std::string auth_token = authorize_object_url(obj.get_sha1(), account_token);
+    std::string auth_token = authorize_object_url(obj.get_sha1(), session_token);
 
     // Get URL
     std::string url = get_object_url(obj.get_sha1(), auth_token);
@@ -271,10 +325,12 @@ int main(int argc, char* argv[])
     else if (opt_play) {
         query_execute(std::string(user_cond), obj_list, obj_map);
 
+        std::string session_token = authorize_account(std::string(account_token));
+
         for (std::list<object>::iterator it=obj_list.begin(); it != obj_list.end(); ++it) {
                 object_type_t object_type = (*it).get_object_type();
                 if (object_type == OBJECT_TYPE_AUDIO) {
-                   play_object(*it, std::string(account_token));
+                   play_object(*it, session_token);
                 }
         }
 
