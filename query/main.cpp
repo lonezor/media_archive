@@ -1,7 +1,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <my_global.h>
 #include <ctype.h>
 #include <libgen.h>
 #include <stdio.h>
@@ -159,10 +158,9 @@ std::string authorize_account(std::string account_token)
         size_t end = curl_resp.find_first_of ('\"', pos);
         return curl_resp.substr(pos, end - pos);
     }
-    else {
-        return "";
-    }
   }
+
+  return "";
 }
 
 std::string authorize_object_url(std::string sha1, std::string session_token)
@@ -222,10 +220,9 @@ std::string authorize_object_url(std::string sha1, std::string session_token)
         size_t end = curl_resp.find_first_of ('\"', pos);
         return curl_resp.substr(pos, end - pos);
     }
-    else {
-        return "";
-    }
   }
+
+  return "";
 }
 
 std::string get_object_url(std::string sha1, std::string auth_token)

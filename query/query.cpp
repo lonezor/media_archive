@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <my_global.h>
 #include <mysql.h>
 #include <assert.h>
 #include <ctype.h>
@@ -256,6 +255,8 @@ translate_cond(char* user_cond, int user_cond_size, char* sql_cond, int sql_cond
             snprintf(sql_cond, sql_cond_size, "WHERE (avp.attribute = '%s' and avp.value <= '%s')", attribute, value);
             break;
     }
+
+  return true;
 }
 
 void query_print_attribute_list()
