@@ -27,10 +27,15 @@ typedef enum {
 typedef struct {
   std::string artist;
   std::string album;
-  int track;
   std::string title;
   std::string duration;
   std::string genre;
+  std::string producer;
+  int total_discs;
+  int total_tracks;
+  int disc;
+  int track;
+  int total_timestamps;
 } audio_metadata_t;
 
 class object {
@@ -53,10 +58,15 @@ public:
     std::string get_thumbnail_path(thumbnail_size_t size, thumbnail_quality_t quality);
 void set_audio_metadata(std::string artist,
                                 std::string album,
-                                int track,
                                 std::string title,
                                 std::string duration,
-                                std::string genre);
+                                std::string genre,
+                                std::string producer,
+                                int total_discs,
+                                int total_tracks,
+                                int disc,
+                                int track,
+                                int total_timestamps);
     
     audio_metadata_t audio_metadata;
 

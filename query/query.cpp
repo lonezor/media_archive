@@ -327,23 +327,65 @@ char* get_object_avp_value(uint32_t obj_id, const char* attribute)
     return strdup(avp_value);
 } 
 
+void zero_integer_string(char** str) {
+    free(*str);
+    *str = strdup("0");
+}
 
 void retrieve_audio_metadata(object& obj) {
     char* artist = get_object_avp_value(obj.get_obj_id(), "Audio.Artist");
     char* album = get_object_avp_value(obj.get_obj_id(), "Audio.Album");
-    char* track = get_object_avp_value(obj.get_obj_id(), "Audio.Track");
     char* title = get_object_avp_value(obj.get_obj_id(), "Audio.Title");
     char* duration = get_object_avp_value(obj.get_obj_id(), "Audio.Duration");
     char* genre = get_object_avp_value(obj.get_obj_id(), "Audio.Genre");
+    char* producer = get_object_avp_value(obj.get_obj_id(), "Audio.Producer");
+    char* total_discs = get_object_avp_value(obj.get_obj_id(), "Audio.TotalDiscs");
+    char* total_tracks = get_object_avp_value(obj.get_obj_id(), "Audio.TotalTracks");
+    char* disc = get_object_avp_value(obj.get_obj_id(), "Audio.Disc");
+    char* track = get_object_avp_value(obj.get_obj_id(), "Audio.Track");
+    char* total_timestamps = get_object_avp_value(obj.get_obj_id(), "Audio.TotalTimestamps");
 
-    obj.set_audio_metadata(std::string(artist), std::string(album), atoi(track), std::string(title), std::string(duration), std::string(genre));
-    
+    if (!strlen(total_discs)) {
+        zero_integer_string(&total_discs);
+    }
+
+    if (!strlen(total_tracks)) {
+        zero_integer_string(&total_tracks);
+    }
+
+    if (!strlen(disc)) {
+        zero_integer_string(&disc);
+    }
+
+    if (!strlen(track)) {
+        zero_integer_string(&track);
+    }
+
+    if (!strlen(total_timestamps)) {
+        zero_integer_string(&total_timestamps);
+    }
+
+    obj.set_audio_metadata(std::string(artist),
+                           std::string(album),
+                           std::string(title),
+                           std::string(duration),
+                           std::string(genre),
+                           std::string(producer),
+                           atoi(total_discs),
+                           atoi(total_tracks),
+                           atoi(disc),
+                           atoi(track),
+                           atoi(total_timestamps));
     free(artist);
     free(album);
-    free(track);
     free(title);
     free(duration);
     free(genre);
+    free(total_discs);
+    free(total_tracks);
+    free(disc);
+    free(track);
+    free(total_timestamps);
 }
 
 void get_object_results(const char* sql, std::list<object>& obj_list, std::unordered_map<uint32_t, object>& obj_map)
@@ -408,9 +450,17 @@ void query_execute(std::string user_query, std::list<object>& obj_list, std::uno
         // For now we have enough to start using the system. Long term we need to store object info in hash table and
         // for fast retrieval when operator tree has been processed and the final objects are determined.
         // For now, we can generate resource URL to the data so that the data can be presented...
-        // So, next step is the GTK application...
+        // So, next step is the GTK application... or command line application
 
         get_object_results(sql_query, obj_list, obj_map);
+}
+
+void query_increment_access_counter(uint32_t obj_id)
+{
+   char sql[1024];
+    snprintf(sql, sizeof(sql), "UPDATE object SET access_counter=access_counter+1 WHERE id=%u;", obj_id);
+    printf("%s\n", sql);
+    mysql_query(&mysql, sql);
 }
 
 

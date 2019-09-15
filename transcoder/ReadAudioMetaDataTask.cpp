@@ -93,6 +93,14 @@ void ReadAudioMetaDataTask::execute() {
 				attribute = "Audio.TotalTracks";
 				extractValue = true;
 			}
+			else if (cmpLine.find(" disc ") != std::string::npos) {
+				attribute = "Audio.Disc";
+				extractValue = true;
+			}
+			else if (cmpLine.find(" totaldiscs ") != std::string::npos) {
+				attribute = "Audio.TotalDiscs";
+				extractValue = true;
+			}
 			else if (cmpLine.find(" title ") != std::string::npos) {
 				attribute = "Audio.Title";
 				extractValue = true;

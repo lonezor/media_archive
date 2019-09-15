@@ -88,17 +88,27 @@ std::string object::get_thumbnail_path(thumbnail_size_t size, thumbnail_quality_
 
 void object::set_audio_metadata(std::string artist,
                                 std::string album,
-                                int track,
                                 std::string title,
                                 std::string duration,
-                                std::string genre)
+                                std::string genre,
+                                std::string producer,
+                                int total_discs,
+                                int total_tracks,
+                                int disc,
+                                int track,
+                                int total_timestamps)
 {
     audio_metadata.artist = artist;
     audio_metadata.album = album;
-    audio_metadata.track = track;
     audio_metadata.title = title;
     audio_metadata.duration = duration;
     audio_metadata.genre = genre;
+    audio_metadata.producer = producer;
+    audio_metadata.total_discs = total_discs;
+    audio_metadata.total_tracks = total_tracks;
+    audio_metadata.disc = disc;
+    audio_metadata.track = track;
+    audio_metadata.total_timestamps = total_timestamps;
 }
 
 thumbnail_size_t object::get_highest_thumbnail_size()

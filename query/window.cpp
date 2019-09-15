@@ -375,8 +375,13 @@ GtkWidget* window::create_audio_page_container(gtk_ctx_t* ctx)
 
     g_object_unref (model);
 
+    // Put grid inside scrolled window
+    GtkWidget* scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+    gtk_widget_set_size_request(scrolled_window, 10, SCREEN_HEIGHT );
+    gtk_container_add (GTK_CONTAINER (scrolled_window), view);
+
     GtkWidget* vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
-    gtk_box_pack_start (GTK_BOX (vbox), view, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (vbox), scrolled_window, FALSE, FALSE, 0);
 
     return vbox;
 }

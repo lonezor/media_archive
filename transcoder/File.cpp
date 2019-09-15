@@ -233,6 +233,8 @@ void File::populateSupportedMetaDataKeyMap() {
 	supportedMetaDataKeyMap["Audio.Genre"]                     = "Media Info";
 	supportedMetaDataKeyMap["Audio.Track"]                     = "Media Info";
 	supportedMetaDataKeyMap["Audio.TotalTracks"]               = "Media Info";
+	supportedMetaDataKeyMap["Audio.Disc"]                      = "Media Info";
+	supportedMetaDataKeyMap["Audio.TotalDiscs"]                = "Media Info";
 	supportedMetaDataKeyMap["Audio.Title"]                     = "Media Info";
 	supportedMetaDataKeyMap["Audio.Duration"]                  = "Media Info";                           
 	supportedMetaDataKeyMap["Image"]                           = "Media Info";
